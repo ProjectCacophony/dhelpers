@@ -15,6 +15,7 @@ type Event struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
 
 type EventChannelCreate struct {
@@ -26,7 +27,9 @@ type EventChannelCreate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventChannelDelete struct {
 	Alias             string
 	Type              EventType
@@ -36,7 +39,9 @@ type EventChannelDelete struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventPinsUpdate struct {
 	Alias             string
 	Type              EventType
@@ -46,7 +51,9 @@ type EventPinsUpdate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventChannelUpdate struct {
 	Alias             string
 	Type              EventType
@@ -56,7 +63,9 @@ type EventChannelUpdate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventGuildBanAdd struct {
 	Alias             string
 	Type              EventType
@@ -66,7 +75,9 @@ type EventGuildBanAdd struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventGuildBanRemove struct {
 	Alias             string
 	Type              EventType
@@ -76,7 +87,9 @@ type EventGuildBanRemove struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventGuildCreate struct {
 	Alias             string
 	Type              EventType
@@ -86,7 +99,9 @@ type EventGuildCreate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventGuildDelete struct {
 	Alias             string
 	Type              EventType
@@ -96,7 +111,9 @@ type EventGuildDelete struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventEmojisUpdate struct {
 	Alias             string
 	Type              EventType
@@ -106,7 +123,9 @@ type EventEmojisUpdate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventMemberAdd struct {
 	Alias             string
 	Type              EventType
@@ -116,7 +135,9 @@ type EventMemberAdd struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventMemberRemove struct {
 	Alias             string
 	Type              EventType
@@ -126,7 +147,9 @@ type EventMemberRemove struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventMemberUpdate struct {
 	Alias             string
 	Type              EventType
@@ -136,7 +159,9 @@ type EventMemberUpdate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventMembersChunk struct {
 	Alias             string
 	Type              EventType
@@ -146,7 +171,9 @@ type EventMembersChunk struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventRoleCreate struct {
 	Alias             string
 	Type              EventType
@@ -156,6 +183,7 @@ type EventRoleCreate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
 type EventRoleDelete struct {
 	Alias             string
@@ -166,7 +194,9 @@ type EventRoleDelete struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventRoleUpdate struct {
 	Alias             string
 	Type              EventType
@@ -176,7 +206,9 @@ type EventRoleUpdate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventGuildUpdate struct {
 	Alias             string
 	Type              EventType
@@ -186,7 +218,9 @@ type EventGuildUpdate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventMessageCreate struct {
 	Alias             string
 	Type              EventType
@@ -196,7 +230,9 @@ type EventMessageCreate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventMessageDelete struct {
 	Alias             string
 	Type              EventType
@@ -206,7 +242,9 @@ type EventMessageDelete struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventMessageReactionAdd struct {
 	Alias             string
 	Type              EventType
@@ -216,7 +254,9 @@ type EventMessageReactionAdd struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
+
 type EventMessageReactionRemove struct {
 	Alias             string
 	Type              EventType
@@ -226,6 +266,7 @@ type EventMessageReactionRemove struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
 
 type EventMessageReactionRemoveAll struct {
@@ -237,6 +278,7 @@ type EventMessageReactionRemoveAll struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
 
 type EventMessageUpdate struct {
@@ -248,6 +290,7 @@ type EventMessageUpdate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
 
 type EventPresenceUpdate struct {
@@ -259,4 +302,5 @@ type EventPresenceUpdate struct {
 	SourceChannel     *discordgo.Channel
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
+	GatewayStarted    time.Time
 }
