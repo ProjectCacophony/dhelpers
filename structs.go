@@ -16,6 +16,7 @@ type Event struct {
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
 	GatewayStarted    time.Time
+	Args              []string
 }
 
 type EventChannelCreate struct {
@@ -231,6 +232,7 @@ type EventMessageCreate struct {
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
 	GatewayStarted    time.Time
+	Args              []string
 }
 
 type EventMessageDelete struct {
@@ -243,6 +245,7 @@ type EventMessageDelete struct {
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
 	GatewayStarted    time.Time
+	Args              []string
 }
 
 type EventMessageReactionAdd struct {
@@ -291,6 +294,7 @@ type EventMessageUpdate struct {
 	SourceGuild       *discordgo.Guild
 	GatewayReceivedAt time.Time
 	GatewayStarted    time.Time
+	Args              []string
 }
 
 type EventPresenceUpdate struct {

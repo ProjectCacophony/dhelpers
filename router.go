@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 type EventType string
@@ -58,6 +60,8 @@ type rawRoutingEntry struct {
 	Requirements []rawRoutingRequirementEntry // will only get matched with EventTypeMessageCreate, EventTypeMessageUpdate, or EventTypeMessageDelete, will match everything if slice is empty
 	Always       bool                         // if true: will run even if there have been previous (higher priority) matches
 	Priority     int                          // higher runs before lower
+	AllowBots    bool                         // if set to true, will trigger for messages by bots
+	AllowMyself  bool                         // if set to true, will trigger for messages by this bot itself
 }
 type rawRoutingRequirementEntry struct {
 	Beginning          string // can be empty, will match all
@@ -76,6 +80,8 @@ type RoutingRule struct {
 	DoNotPrependPrefix bool
 	CaseSensitive      bool
 	Always             bool
+	AllowBots          bool
+	AllowMyself        bool
 	Alias              string
 }
 
@@ -131,9 +137,11 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 			// generate route for each type
 			for _, ruleType := range rawRule.Type {
 				newEntry := RoutingRule{
-					Type:     ruleType,
-					Endpoint: rawRule.Endpoint,
-					Always:   rawRule.Always,
+					Type:        ruleType,
+					Endpoint:    rawRule.Endpoint,
+					Always:      rawRule.Always,
+					AllowMyself: rawRule.AllowMyself,
+					AllowBots:   rawRule.AllowBots,
 
 					Beginning:          "",
 					Regex:              nil,
@@ -170,47 +178,65 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 }
 
 // checks if a message content matches the requirements of the routing rule
-func RoutingMatchMessage(routingEntry RoutingRule, content, prefix string) (match bool) {
+func RoutingMatchMessage(routingEntry RoutingRule, author, bot *discordgo.User, content string, args []string, prefix string) (match bool) {
+	// ignore bots?
+	if !routingEntry.AllowBots {
+		if author.Bot {
+			return false
+		}
+	}
+	// ignore itself?
+	if !routingEntry.AllowMyself {
+		if author.ID == bot.ID {
+			return false
+		}
+	}
+	// check prefix if should check
+	if !routingEntry.DoNotPrependPrefix {
+		if prefix == "" {
+			return false
+		}
+	}
 	// match beginning if beginning is set
 	if routingEntry.Beginning != "" {
 		if routingEntry.CaseSensitive {
-			if routingEntry.DoNotPrependPrefix {
-				if !strings.HasPrefix(content, routingEntry.Beginning) {
-					return false
-				}
-			} else {
-				if !strings.HasPrefix(content, prefix+routingEntry.Beginning) {
-					return false
-				}
+			if args[0] != routingEntry.Beginning {
+				return false
 			}
 		} else {
-			if routingEntry.DoNotPrependPrefix {
-				if !strings.HasPrefix(strings.ToLower(content), strings.ToLower(routingEntry.Beginning)) {
-					return false
-				}
-			} else {
-				if !strings.HasPrefix(strings.ToLower(content), prefix+strings.ToLower(routingEntry.Beginning)) {
-					return false
-				}
+			if strings.ToLower(args[0]) != strings.ToLower(routingEntry.Beginning) {
+				return false
 			}
 		}
 	}
 	// match regex if regex is set
 	if routingEntry.Regex != nil {
-		if routingEntry.DoNotPrependPrefix {
-			if !routingEntry.Regex.MatchString(content) {
-				return false
-			}
-		} else {
-			if !strings.HasPrefix(content, prefix) {
-				return false
-			}
-			matchContent := strings.TrimLeft(content, prefix)
-			if !routingEntry.Regex.MatchString(matchContent) {
-				return false
-			}
+		matchContent := content
+		if !routingEntry.DoNotPrependPrefix {
+			matchContent = strings.TrimSpace(strings.TrimLeft(content, prefix))
+		}
+		if routingEntry.Regex.MatchString(matchContent) {
+			match = true
 		}
 	}
 
 	return true
+}
+
+// Trims the prefix and returns all arguments, including the command, and the prefix used
+func GetMessageArguments(content string, prefixes []string) (args []string, prefix string) {
+	for _, possiblePrefix := range prefixes {
+		if strings.HasPrefix(content, possiblePrefix) {
+			content = strings.TrimLeft(content, possiblePrefix)
+			prefix = possiblePrefix
+			break
+		}
+	}
+
+	args, err := ToArgv(content)
+	if err == nil {
+		return args, prefix
+	}
+
+	return []string{content}, prefix
 }
