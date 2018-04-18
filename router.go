@@ -56,7 +56,7 @@ const (
 type rawRoutingEntry struct {
 	Active       bool
 	Type         []EventType
-	Endpoint     string
+	Function     string
 	Requirements []rawRoutingRequirementEntry // will only get matched with EventTypeMessageCreate, EventTypeMessageUpdate, or EventTypeMessageDelete, will match everything if slice is empty
 	Always       bool                         // if true: will run even if there have been previous (higher priority) matches
 	Priority     int                          // higher runs before lower
@@ -74,7 +74,7 @@ type rawRoutingRequirementEntry struct {
 // Routing Compiled Config
 type RoutingRule struct {
 	Type               EventType
-	Endpoint           string
+	Function           string
 	Beginning          string
 	Regex              *regexp.Regexp
 	DoNotPrependPrefix bool
@@ -131,14 +131,14 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 				continue
 			}
 			// skip empty endpoints
-			if rawRule.Endpoint == "" {
+			if rawRule.Function == "" {
 				continue
 			}
 			// generate route for each type
 			for _, ruleType := range rawRule.Type {
 				newEntry := RoutingRule{
 					Type:        ruleType,
-					Endpoint:    rawRule.Endpoint,
+					Function:    rawRule.Function,
 					Always:      rawRule.Always,
 					AllowMyself: rawRule.AllowMyself,
 					AllowBots:   rawRule.AllowBots,

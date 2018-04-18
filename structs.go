@@ -6,305 +6,227 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-type Event struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             interface{}
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
-	Args              []string
+type EventContainer struct {
+	Type           EventType
+	Data           []byte
+	ReceivedAt     time.Time
+	GatewayStarted time.Time
 }
 
 type EventChannelCreate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.ChannelCreate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.ChannelCreate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventChannelDelete struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.ChannelDelete
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.ChannelDelete
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
-type EventPinsUpdate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.ChannelPinsUpdate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventChannelPinsUpdate struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.ChannelPinsUpdate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventChannelUpdate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.ChannelUpdate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.ChannelUpdate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventGuildBanAdd struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildBanAdd
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildBanAdd
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventGuildBanRemove struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildBanRemove
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildBanRemove
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventGuildCreate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildCreate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildCreate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventGuildDelete struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildDelete
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildDelete
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
-type EventEmojisUpdate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildEmojisUpdate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventGuildEmojisUpdate struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildEmojisUpdate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
-type EventMemberAdd struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildMemberAdd
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventGuildMemberAdd struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildMemberAdd
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
-type EventMemberRemove struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildMemberRemove
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventGuildMemberRemove struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildMemberRemove
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
-type EventMemberUpdate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildMemberUpdate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventGuildMemberUpdate struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildMemberUpdate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
-type EventMembersChunk struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildMembersChunk
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventGuildMembersChunk struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildMembersChunk
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
-type EventRoleCreate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildRoleCreate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventGuildRoleCreate struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildRoleCreate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
-type EventRoleDelete struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildRoleDelete
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventGuildRoleDelete struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildRoleDelete
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
-type EventRoleUpdate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildRoleUpdate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+type EventGuildRoleUpdate struct {
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildRoleUpdate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventGuildUpdate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.GuildUpdate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.GuildUpdate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventMessageCreate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.MessageCreate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
-	Args              []string
+	Alias         string
+	Prefix        string
+	Event         *discordgo.MessageCreate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
+	Args          []string
 }
 
 type EventMessageDelete struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.MessageDelete
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
-	Args              []string
+	Alias         string
+	Prefix        string
+	Event         *discordgo.MessageDelete
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
+	Args          []string
 }
 
 type EventMessageReactionAdd struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.MessageReactionAdd
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.MessageReactionAdd
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventMessageReactionRemove struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.MessageReactionRemove
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.MessageReactionRemove
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventMessageReactionRemoveAll struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.MessageReactionRemoveAll
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.MessageReactionRemoveAll
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
 
 type EventMessageUpdate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.MessageUpdate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
-	Args              []string
+	Alias         string
+	Prefix        string
+	Event         *discordgo.MessageUpdate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
+	Args          []string
 }
 
 type EventPresenceUpdate struct {
-	Alias             string
-	Type              EventType
-	Prefix            string
-	Event             discordgo.PresenceUpdate
-	BotUser           *discordgo.User
-	SourceChannel     *discordgo.Channel
-	SourceGuild       *discordgo.Guild
-	GatewayReceivedAt time.Time
-	GatewayStarted    time.Time
+	Alias         string
+	Prefix        string
+	Event         *discordgo.PresenceUpdate
+	BotUser       *discordgo.User
+	SourceChannel *discordgo.Channel
+	SourceGuild   *discordgo.Guild
 }
