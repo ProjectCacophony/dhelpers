@@ -1,12 +1,11 @@
 package dhelpers
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -53,28 +52,36 @@ const (
 )
 
 // Routing JSON Config
+type rawRoutingEntryContainer struct {
+	Module []rawRoutingEntry
+}
+
 type rawRoutingEntry struct {
-	Active       bool
-	Type         []EventType
-	Function     string
-	Requirements []rawRoutingRequirementEntry // will only get matched with EventTypeMessageCreate, EventTypeMessageUpdate, or EventTypeMessageDelete, will match everything if slice is empty
-	Always       bool                         // if true: will run even if there have been previous (higher priority) matches
-	Priority     int                          // higher runs before lower
-	AllowBots    bool                         // if set to true, will trigger for messages by bots
-	AllowMyself  bool                         // if set to true, will trigger for messages by this bot itself
+	Active      bool
+	Events      []EventType
+	Module      string
+	Destination string
+	Requirement []rawRoutingRequirementEntry // will only get matched with EventTypeMessageCreate, EventTypeMessageUpdate, or EventTypeMessageDelete, will match everything if slice is empty
+	Always      bool                         // if true: will run even if there have been previous (higher priority) matches
+	Priority    int                          // higher runs before lower
+	AllowBots   bool                         // if set to true, will trigger for messages by bots
+	AllowMyself bool                         // if set to true, will trigger for messages by this bot itself
+	AllowDM     bool
 }
 type rawRoutingRequirementEntry struct {
-	Beginning          string // can be empty, will match all
-	Regex              string // can be empty, will match all
-	DoNotPrependPrefix bool   // if false, prepends guild prefix to regex
-	CaseSensitive      bool   // prepends (?i) to regex on go, language dependent#
+	Beginning          []string // can be empty, will match all
+	Regex              string   // can be empty, will match all
+	DoNotPrependPrefix bool     // if false, prepends guild prefix to regex
+	CaseSensitive      bool     // prepends (?i) to regex on go, language dependent#
 	Alias              string
 }
 
 // Routing Compiled Config
 type RoutingRule struct {
-	Type               EventType
-	Function           string
+	Event              EventType
+	Module             string
+	DestinationMain    string
+	DestinationSub     string
 	Beginning          string
 	Regex              *regexp.Regexp
 	DoNotPrependPrefix bool
@@ -83,19 +90,15 @@ type RoutingRule struct {
 	AllowBots          bool
 	AllowMyself        bool
 	Alias              string
+	AllowDM            bool
 }
 
 // returns a sorted slice (by priority) with all rules
 func GetRoutings() (routingRules []RoutingRule, err error) {
 	// read and unmarshal config from file
 	// TODO: load from S3 instead
-	var rawRouting []rawRoutingEntry
-	routingFileData, err := ioutil.ReadFile("routing.json")
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(routingFileData, &rawRouting)
+	var rawRoutingContainer rawRoutingEntryContainer
+	_, err = toml.DecodeFile("routing.toml", &rawRoutingContainer)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +106,7 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 	// group rules by priorities
 	rawEntriesByPriority := make(map[int][]rawRoutingEntry, 0)
 
-	for _, rawRoutingEntry := range rawRouting {
+	for _, rawRoutingEntry := range rawRoutingContainer.Module {
 		rawEntriesByPriority[rawRoutingEntry.Priority] = append(
 			rawEntriesByPriority[rawRoutingEntry.Priority], rawRoutingEntry,
 		)
@@ -127,21 +130,25 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 				continue
 			}
 			// skip empty event slices
-			if rawRule.Type == nil || len(rawRule.Type) < 0 {
+			if rawRule.Events == nil || len(rawRule.Events) < 0 {
 				continue
 			}
-			// skip empty endpoints
-			if rawRule.Function == "" {
+			// skip empty or invalid destinations
+			if rawRule.Destination == "" || !strings.Contains(rawRule.Destination, "/") {
 				continue
 			}
 			// generate route for each type
-			for _, ruleType := range rawRule.Type {
+			for _, ruleType := range rawRule.Events {
+				parts := strings.SplitN(rawRule.Destination, "/", 2)
 				newEntry := RoutingRule{
-					Type:        ruleType,
-					Function:    rawRule.Function,
-					Always:      rawRule.Always,
-					AllowMyself: rawRule.AllowMyself,
-					AllowBots:   rawRule.AllowBots,
+					Event:           ruleType,
+					Module:          rawRule.Module,
+					DestinationMain: parts[0],
+					DestinationSub:  parts[1],
+					Always:          rawRule.Always,
+					AllowMyself:     rawRule.AllowMyself,
+					AllowBots:       rawRule.AllowBots,
+					AllowDM:         rawRule.AllowDM,
 
 					Beginning:          "",
 					Regex:              nil,
@@ -151,21 +158,38 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 				if (ruleType == MessageCreateEventType ||
 					ruleType == MessageUpdateEventType ||
 					ruleType == MessageDeleteEventType) &&
-					rawRule.Requirements != nil && len(rawRule.Requirements) > 0 {
-					for _, requirement := range rawRule.Requirements {
-						newEntryCopy := newEntry
-						newEntryCopy.Beginning = requirement.Beginning
-						if requirement.Regex != "" {
-							if requirement.CaseSensitive {
-								newEntryCopy.Regex = regexp.MustCompile(requirement.Regex)
-							} else {
-								newEntryCopy.Regex = regexp.MustCompile("(?i)" + requirement.Regex)
+					rawRule.Requirement != nil && len(rawRule.Requirement) > 0 {
+					for _, requirement := range rawRule.Requirement {
+						if requirement.Beginning != nil && len(requirement.Beginning) > 0 {
+							for _, beginning := range requirement.Beginning {
+								newEntryCopy := newEntry
+								newEntryCopy.Beginning = beginning
+								if requirement.Regex != "" {
+									if requirement.CaseSensitive {
+										newEntryCopy.Regex = regexp.MustCompile(requirement.Regex)
+									} else {
+										newEntryCopy.Regex = regexp.MustCompile("(?i)" + requirement.Regex)
+									}
+								}
+								newEntryCopy.DoNotPrependPrefix = requirement.DoNotPrependPrefix
+								newEntryCopy.CaseSensitive = requirement.CaseSensitive
+								newEntryCopy.Alias = requirement.Alias
+								routingRules = append(routingRules, newEntryCopy)
 							}
+						} else {
+							newEntryCopy := newEntry
+							if requirement.Regex != "" {
+								if requirement.CaseSensitive {
+									newEntryCopy.Regex = regexp.MustCompile(requirement.Regex)
+								} else {
+									newEntryCopy.Regex = regexp.MustCompile("(?i)" + requirement.Regex)
+								}
+							}
+							newEntryCopy.DoNotPrependPrefix = requirement.DoNotPrependPrefix
+							newEntryCopy.CaseSensitive = requirement.CaseSensitive
+							newEntryCopy.Alias = requirement.Alias
+							routingRules = append(routingRules, newEntryCopy)
 						}
-						newEntryCopy.DoNotPrependPrefix = requirement.DoNotPrependPrefix
-						newEntryCopy.CaseSensitive = requirement.CaseSensitive
-						newEntryCopy.Alias = requirement.Alias
-						routingRules = append(routingRules, newEntryCopy)
 					}
 				} else {
 					routingRules = append(routingRules, newEntry)
@@ -178,7 +202,7 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 }
 
 // checks if a message content matches the requirements of the routing rule
-func RoutingMatchMessage(routingEntry RoutingRule, author, bot *discordgo.User, content string, args []string, prefix string) (match bool) {
+func RoutingMatchMessage(routingEntry RoutingRule, author, bot *discordgo.User, channel *discordgo.Channel, content string, args []string, prefix string) (match bool) {
 	// ignore bots?
 	if !routingEntry.AllowBots {
 		if author.Bot {
@@ -188,6 +212,12 @@ func RoutingMatchMessage(routingEntry RoutingRule, author, bot *discordgo.User, 
 	// ignore itself?
 	if !routingEntry.AllowMyself {
 		if author.ID == bot.ID {
+			return false
+		}
+	}
+	// DMs?
+	if !routingEntry.AllowDM {
+		if channel.Type == discordgo.ChannelTypeDM {
 			return false
 		}
 	}
@@ -239,4 +269,86 @@ func GetMessageArguments(content string, prefixes []string) (args []string, pref
 	}
 
 	return []string{content}, prefix
+}
+
+// figures out the correct destinations for an event container
+func ContainerDestinations(session *discordgo.Session, routingConfig []RoutingRule, container EventContainer) (lambdaDestinations, processorDestinations, aliases []string) {
+	var handled int
+
+	for _, routingEntry := range routingConfig {
+		if handled > 0 && !routingEntry.Always {
+			continue
+		}
+
+		if container.Type != routingEntry.Event {
+			continue
+		}
+
+		// check requirements
+		if container.Type == MessageCreateEventType {
+			channel, err := session.State.Channel(container.MessageCreate.ChannelID)
+			if err != nil {
+				continue
+			}
+
+			if !RoutingMatchMessage(
+				routingEntry,
+				container.MessageCreate.Author,
+				session.State.User,
+				channel,
+				container.MessageCreate.Content,
+				container.Args,
+				container.Prefix,
+			) {
+				continue
+			}
+		}
+		if container.Type == MessageUpdateEventType {
+			channel, err := session.State.Channel(container.MessageUpdate.ChannelID)
+			if err != nil {
+				continue
+			}
+
+			if !RoutingMatchMessage(
+				routingEntry,
+				container.MessageUpdate.Author,
+				session.State.User,
+				channel,
+				container.MessageUpdate.Content,
+				container.Args,
+				container.Prefix,
+			) {
+				continue
+			}
+		}
+		if container.Type == MessageDeleteEventType {
+			channel, err := session.State.Channel(container.MessageDelete.ChannelID)
+			if err != nil {
+				continue
+			}
+
+			if !RoutingMatchMessage(
+				routingEntry,
+				container.MessageDelete.Author,
+				session.State.User,
+				channel,
+				container.MessageDelete.Content,
+				container.Args,
+				container.Prefix,
+			) {
+				continue
+			}
+		}
+
+		handled++
+		aliases = append(aliases, routingEntry.Alias)
+		if routingEntry.DestinationMain == "lambda" {
+			lambdaDestinations = append(lambdaDestinations, routingEntry.DestinationSub)
+		}
+		if routingEntry.DestinationMain == "sqs" {
+			processorDestinations = append(processorDestinations, routingEntry.DestinationSub)
+		}
+	}
+
+	return
 }

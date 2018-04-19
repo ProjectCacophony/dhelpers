@@ -11,7 +11,9 @@ type EventContainer struct {
 	Key            string
 	ReceivedAt     time.Time
 	GatewayStarted time.Time
-	Alias          string
+	Modules        []string
+	Destinations   []string
+	Alias          []string
 	Prefix         string
 	Args           []string
 	// State
