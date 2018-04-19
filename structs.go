@@ -8,6 +8,7 @@ import (
 
 type EventContainer struct {
 	Type           EventType
+	Key            string
 	ReceivedAt     time.Time
 	GatewayStarted time.Time
 	Alias          string
