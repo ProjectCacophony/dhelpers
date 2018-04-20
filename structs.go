@@ -16,10 +16,7 @@ type EventContainer struct {
 	Alias          []string
 	Prefix         string
 	Args           []string
-	// State
-	BotUser       *discordgo.User
-	SourceChannel *discordgo.Channel
-	SourceGuild   *discordgo.Guild
+	BotUserID      string
 	// Events
 	ChannelCreate            *discordgo.ChannelCreate
 	ChannelDelete            *discordgo.ChannelDelete
