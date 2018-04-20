@@ -182,11 +182,33 @@ func memberRemove(member *discordgo.Member) (err error) {
 	if err != nil {
 		return err
 	}
-	err = deleteStateObject(userKey(member.User.ID))
-	if err != nil {
-		return err
+
+	// viable?
+	allGuildIDs, err := AllGuildIDs()
+	if err == nil {
+		var isOnOtherGuilds bool
+		for _, guildID := range allGuildIDs {
+			if guildID == member.GuildID {
+				continue
+			}
+			botGuild, err := Guild(guildID)
+			if err == nil {
+				for _, botGuildMember := range botGuild.Members {
+					if botGuildMember.User.ID == member.User.ID {
+						isOnOtherGuilds = true
+						break
+					}
+				}
+			}
+		}
+		if !isOnOtherGuilds {
+			err = deleteStateObject(userKey(member.User.ID))
+			if err != nil {
+				return err
+			}
+			removeFromStateSet(userIdsSetKey(), member.User.ID)
+		}
 	}
-	removeFromStateSet(userIdsSetKey(), member.User.ID)
 
 	// update previous guild
 	for i, previousMember := range previousGuild.Members {
