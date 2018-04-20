@@ -13,6 +13,14 @@ import (
 var stateLock sync.Mutex
 var stateExpire = time.Duration(0)
 
+func userIdsSetKey() string {
+	return "project-d:state:user-ids"
+}
+
+func guildIdsSetKey() string {
+	return "project-d:state:guild-ids"
+}
+
 func userKey(userID string) string {
 	return "project-d:state:user-" + userID
 }
@@ -62,4 +70,34 @@ func readStateObject(key string) (data []byte, err error) {
 
 	//fmt.Println("read", key, "from state", "(size: "+humanize.Bytes(uint64(binary.Size(data)))+")")
 	return data, nil
+}
+
+func addToStateSet(key, item string) (err error) {
+	err = cache.GetRedisClient().SAdd(key, item).Err()
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println("added", item, "to", key, "state set")
+	return nil
+}
+
+func removeFromStateSet(key, item string) (err error) {
+	err = cache.GetRedisClient().SRem(key, item).Err()
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println("removed", item, "from", key, "state set")
+	return nil
+}
+
+func readStateSet(key string) (items []string, err error) {
+	items, err = cache.GetRedisClient().SMembers(key).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	//fmt.Println("read", key, "state set")
+	return items, nil
 }

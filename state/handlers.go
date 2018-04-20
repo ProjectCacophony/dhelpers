@@ -18,6 +18,7 @@ func onReady(session *discordgo.Session, ready *discordgo.Ready) (err error) {
 		if err != nil {
 			return err
 		}
+		addToStateSet(guildIdsSetKey(), guild.ID)
 
 		// cache guild channels
 		for _, channel := range guild.Channels {
@@ -37,6 +38,7 @@ func onReady(session *discordgo.Session, ready *discordgo.Ready) (err error) {
 			if err != nil {
 				return err
 			}
+			addToStateSet(userIdsSetKey(), member.User.ID)
 		}
 	}
 
@@ -73,6 +75,7 @@ func guildAdd(guild *discordgo.Guild) (err error) {
 		if err != nil {
 			return err
 		}
+		addToStateSet(userIdsSetKey(), member.User.ID)
 	}
 
 	// carry over previous guild fields if set
@@ -98,10 +101,12 @@ func guildAdd(guild *discordgo.Guild) (err error) {
 		}
 	}
 
+	// cache guild
 	err = updateStateObject(guildKey(guild.ID), guild)
 	if err != nil {
 		return err
 	}
+	addToStateSet(guildIdsSetKey(), guild.ID)
 
 	return nil
 }
@@ -115,6 +120,7 @@ func guildRemove(guild *discordgo.Guild) (err error) {
 	if err != nil {
 		return err
 	}
+	removeFromStateSet(guildIdsSetKey(), guild.ID)
 
 	return nil
 }
@@ -156,6 +162,7 @@ func memberAdd(member *discordgo.Member) (err error) {
 	if err != nil {
 		return err
 	}
+	addToStateSet(userIdsSetKey(), member.User.ID)
 
 	return nil
 }
@@ -179,6 +186,7 @@ func memberRemove(member *discordgo.Member) (err error) {
 	if err != nil {
 		return err
 	}
+	removeFromStateSet(userIdsSetKey(), member.User.ID)
 
 	// update previous guild
 	for i, previousMember := range previousGuild.Members {

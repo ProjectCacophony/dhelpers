@@ -89,3 +89,11 @@ func User(userID string) (user *discordgo.User, err error) {
 	err = jsoniter.Unmarshal(data, &user)
 	return
 }
+
+func AllGuildIDs() (guildIDs []string, err error) {
+	return readStateSet(guildIdsSetKey())
+}
+
+func AllUserIDs() (userIDs []string, err error) {
+	return readStateSet(userIdsSetKey())
+}
