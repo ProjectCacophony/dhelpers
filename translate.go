@@ -31,7 +31,7 @@ func T(messageID string) (result string) {
 
 // Tf returns the translation for the given message ID applying the fields
 // Example: Tf("HelloWorld", "key", "value")
-func Tf(messageID string, fields ...string) (result string) {
+func Tf(messageID string, fields ...interface{}) (result string) {
 	if cache.GetLocalizationBundle() == nil {
 		return messageID
 	}
@@ -45,7 +45,7 @@ func Tf(messageID string, fields ...string) (result string) {
 	}()
 
 	// create map out of fields
-	data := make(map[string]string)
+	data := make(map[interface{}]interface{})
 	for i := range fields {
 		if i%2 == 0 && len(fields) > i+1 {
 			data[fields[i]] = fields[i+1]
@@ -64,7 +64,7 @@ func Tf(messageID string, fields ...string) (result string) {
 
 // Tfc returns the translation for the given message ID applying the fields and pluralization count
 // Example: Tfc("HelloWorld", 3, "key", "value")
-func Tfc(messageID string, count int, fields ...string) (result string) {
+func Tfc(messageID string, count int, fields ...interface{}) (result string) {
 	if cache.GetLocalizationBundle() == nil {
 		return messageID
 	}
@@ -78,7 +78,7 @@ func Tfc(messageID string, count int, fields ...string) (result string) {
 	}()
 
 	// create map out of fields
-	data := make(map[string]string)
+	data := make(map[interface{}]interface{})
 	for i := range fields {
 		if i%2 == 0 && len(fields) > i+1 {
 			data[fields[i]] = fields[i+1]

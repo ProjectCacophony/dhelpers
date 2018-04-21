@@ -32,7 +32,7 @@ func SendMessage(channelID, content string) (messages []*discordgo.Message, err 
 }
 
 // SendMessagef sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields
-func SendMessagef(channelID, content string, fields ...string) (messages []*discordgo.Message, err error) {
+func SendMessagef(channelID, content string, fields ...interface{}) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	content = cleanDiscordContent(Tf(content, fields...))
 	if len(content) > 2000 {
@@ -54,7 +54,7 @@ func SendMessagef(channelID, content string, fields ...string) (messages []*disc
 }
 
 // SendMessagefc sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields, and applying pluralization
-func SendMessagefc(channelID, content string, count int, fields ...string) (messages []*discordgo.Message, err error) {
+func SendMessagefc(channelID, content string, count int, fields ...interface{}) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	content = cleanDiscordContent(Tfc(content, count, fields...))
 	if len(content) > 2000 {
@@ -147,7 +147,7 @@ func EditMessage(channelID, messageID, content string) (message *discordgo.Messa
 }
 
 // EditMessagef edits a specific message, takes care of sanitising the content, and replacing the fields
-func EditMessagef(channelID, messageID, content string, fields ...string) (message *discordgo.Message, err error) {
+func EditMessagef(channelID, messageID, content string, fields ...interface{}) (message *discordgo.Message, err error) {
 	content = cleanDiscordContent(Tf(content, fields...))
 	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
 	if err != nil {
@@ -157,7 +157,7 @@ func EditMessagef(channelID, messageID, content string, fields ...string) (messa
 }
 
 // EditMessagefc edits a specific message, takes care of sanitising the content, and replacing the fields, and applying pluralization
-func EditMessagefc(channelID, messageID, content string, count int, fields ...string) (message *discordgo.Message, err error) {
+func EditMessagefc(channelID, messageID, content string, count int, fields ...interface{}) (message *discordgo.Message, err error) {
 	content = cleanDiscordContent(Tfc(content, count, fields...))
 	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
 	if err != nil {
