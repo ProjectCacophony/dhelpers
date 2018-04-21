@@ -4,4 +4,5 @@ import (
 	"errors"
 )
 
-var ErrStateNotFound = errors.New("state cache not found")
+// ErrStateNotFound will be returned if the item was not found in the shared state
+var ErrStateNotFound = errors.New("shared state cache not found")

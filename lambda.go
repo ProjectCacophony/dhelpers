@@ -9,7 +9,7 @@ import (
 	"github.com/json-iterator/go"
 )
 
-// sends an event to the given AWS Lambda Function
+// StartLambdaAsync sends an event to the given AWS Lambda Function
 func StartLambdaAsync(lambdaClient *lambda.Lambda, event EventContainer, function string) (bytesSent int, err error) {
 	// pack the event data
 	marshalled, err := jsoniter.Marshal(event)

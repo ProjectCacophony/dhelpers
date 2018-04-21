@@ -2,9 +2,10 @@ package state
 
 import (
 	"github.com/bwmarrin/discordgo"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/json-iterator/go"
 )
 
+// Guild returns the specified Guild from the shard state, returns ErrStateNotFound if not found
 func Guild(guildID string) (guild *discordgo.Guild, err error) {
 	data, err := readStateObject(guildKey(guildID))
 	if err != nil {
@@ -15,6 +16,7 @@ func Guild(guildID string) (guild *discordgo.Guild, err error) {
 	return
 }
 
+// Presence returns the specified Presence from the shard state, returns ErrStateNotFound if not found
 func Presence(guildID, userID string) (presence *discordgo.Presence, err error) {
 	guild, err := Guild(guildID)
 	if err != nil {
@@ -30,6 +32,7 @@ func Presence(guildID, userID string) (presence *discordgo.Presence, err error) 
 	return nil, ErrStateNotFound
 }
 
+// Member returns the specified Member from the shard state, returns ErrStateNotFound if not found
 func Member(guildID, userID string) (member *discordgo.Member, err error) {
 	data, err := readStateObject(memberKey(guildID, userID))
 	if err != nil {
@@ -40,6 +43,7 @@ func Member(guildID, userID string) (member *discordgo.Member, err error) {
 	return
 }
 
+// Role returns the specified Role from the shard state, returns ErrStateNotFound if not found
 func Role(guildID, roleID string) (role *discordgo.Role, err error) {
 	guild, err := Guild(guildID)
 	if err != nil {
@@ -55,6 +59,7 @@ func Role(guildID, roleID string) (role *discordgo.Role, err error) {
 	return nil, ErrStateNotFound
 }
 
+// Channel returns the specified Channel from the shard state, returns ErrStateNotFound if not found
 func Channel(channelID string) (channel *discordgo.Channel, err error) {
 	data, err := readStateObject(channelKey(channelID))
 	if err != nil {
@@ -65,6 +70,7 @@ func Channel(channelID string) (channel *discordgo.Channel, err error) {
 	return
 }
 
+// Emoji returns the specified Emoji from the shard state, returns ErrStateNotFound if not found
 func Emoji(guildID, emojiID string) (emoji *discordgo.Emoji, err error) {
 	guild, err := Guild(guildID)
 	if err != nil {
@@ -80,6 +86,7 @@ func Emoji(guildID, emojiID string) (emoji *discordgo.Emoji, err error) {
 	return nil, ErrStateNotFound
 }
 
+// User returns the specified User from the shard state, returns ErrStateNotFound if not found
 func User(userID string) (user *discordgo.User, err error) {
 	data, err := readStateObject(userKey(userID))
 	if err != nil {
@@ -90,10 +97,12 @@ func User(userID string) (user *discordgo.User, err error) {
 	return
 }
 
+// AllGuildIDs returns a list of all Guild IDs from the shared state
 func AllGuildIDs() (guildIDs []string, err error) {
 	return readStateSet(guildIdsSetKey())
 }
 
+// AllUserIDs returns a list of all User IDs from the shared state
 func AllUserIDs() (userIDs []string, err error) {
 	return readStateSet(userIdsSetKey())
 }

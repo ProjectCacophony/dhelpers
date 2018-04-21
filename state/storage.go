@@ -41,63 +41,35 @@ func updateStateObject(key string, object interface{}) error {
 	}
 
 	err = cache.GetRedisClient().Set(key, marshalled, stateExpire).Err()
-	if err != nil {
-		return err
-	}
-
-	//fmt.Println("saved", key, "to state", "(size: "+humanize.Bytes(uint64(binary.Size(marshalled)))+")")
-	return nil
+	return err
 }
 
 func deleteStateObject(key string) error {
 	err := cache.GetRedisClient().Del(key).Err()
-	if err != nil {
-		return err
-	}
-
-	//fmt.Println("deleted", key, "from state")
-	return nil
+	return err
 }
 
 func readStateObject(key string) (data []byte, err error) {
 	data, err = cache.GetRedisClient().Get(key).Bytes()
-	if err != nil {
-		if err == redis.Nil {
-			return nil, ErrStateNotFound
-		}
-		return nil, err
+
+	if err == redis.Nil {
+		return nil, ErrStateNotFound
 	}
 
-	//fmt.Println("read", key, "from state", "(size: "+humanize.Bytes(uint64(binary.Size(data)))+")")
-	return data, nil
+	return data, err
 }
 
 func addToStateSet(key, item string) (err error) {
 	err = cache.GetRedisClient().SAdd(key, item).Err()
-	if err != nil {
-		return err
-	}
-
-	//fmt.Println("added", item, "to", key, "state set")
-	return nil
+	return err
 }
 
 func removeFromStateSet(key, item string) (err error) {
 	err = cache.GetRedisClient().SRem(key, item).Err()
-	if err != nil {
-		return err
-	}
-
-	//fmt.Println("removed", item, "from", key, "state set")
-	return nil
+	return err
 }
 
 func readStateSet(key string) (items []string, err error) {
 	items, err = cache.GetRedisClient().SMembers(key).Result()
-	if err != nil {
-		return nil, err
-	}
-
-	//fmt.Println("read", key, "state set")
-	return items, nil
+	return items, err
 }

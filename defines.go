@@ -1,5 +1,6 @@
 package dhelpers
 
 const (
-	ZERO_WIDTH_SPACE = "\u200B"
+	// ZeroWidthSpace is a zero width space character, can be used to invalid mentions or fill embed fields
+	ZeroWidthSpace = "\u200B"
 )

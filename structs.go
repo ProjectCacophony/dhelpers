@@ -6,6 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// EventContainer is a container for all events sent to Lambdas or the SQS Queue
 type EventContainer struct {
 	Type           EventType
 	Key            string

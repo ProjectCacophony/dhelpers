@@ -2,7 +2,7 @@ package dhelpers
 
 import "github.com/bwmarrin/discordgo"
 
-// sets endpoints with a custom base discord host
+// SetDiscordEndpoints sets endpoints with a custom base discord host
 // https://github.com/bwmarrin/discordgo/blob/master/endpoints.go#L181
 func SetDiscordEndpoints(endpointDiscord string) {
 	discordgo.EndpointDiscord = endpointDiscord

@@ -9,8 +9,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// EventType is the Type used for the EventContainer
 type EventType string
 
+// defines discordgo event types for the EventContainer
 const (
 	ChannelCreateEventType            EventType = "CHANNEL_CREATE"
 	ChannelDeleteEventType                      = "CHANNEL_DELETE"
@@ -58,16 +60,18 @@ type rawRoutingEntryContainer struct {
 
 type rawRoutingEntry struct {
 	Active      bool
+	Always      bool // if true: will run even if there have been previous (higher priority) matches
+	AllowBots   bool // if set to true, will trigger for messages by bots
+	AllowMyself bool // if set to true, will trigger for messages by this bot itself
+	AllowDM     bool
+
 	Events      []EventType
 	Module      string
 	Destination string
 	Requirement []rawRoutingRequirementEntry // will only get matched with EventTypeMessageCreate, EventTypeMessageUpdate, or EventTypeMessageDelete, will match everything if slice is empty
-	Always      bool                         // if true: will run even if there have been previous (higher priority) matches
 	Priority    int                          // higher runs before lower
-	AllowBots   bool                         // if set to true, will trigger for messages by bots
-	AllowMyself bool                         // if set to true, will trigger for messages by this bot itself
-	AllowDM     bool
 }
+
 type rawRoutingRequirementEntry struct {
 	Beginning          []string // can be empty, will match all
 	Regex              string   // can be empty, will match all
@@ -76,24 +80,24 @@ type rawRoutingRequirementEntry struct {
 	Alias              string
 }
 
-// Routing Compiled Config
+// RoutingRule is a a compiled routing rule used for matching
 type RoutingRule struct {
 	Event              EventType
 	Module             string
 	DestinationMain    string
 	DestinationSub     string
 	Beginning          string
+	Alias              string
 	Regex              *regexp.Regexp
 	DoNotPrependPrefix bool
 	CaseSensitive      bool
 	Always             bool
 	AllowBots          bool
 	AllowMyself        bool
-	Alias              string
 	AllowDM            bool
 }
 
-// returns a sorted slice (by priority) with all rules
+// GetRoutings returns a sorted slice (by priority) with all rules
 func GetRoutings() (routingRules []RoutingRule, err error) {
 	// read and unmarshal config from file
 	// TODO: load from S3 instead
@@ -104,7 +108,7 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 	}
 
 	// group rules by priorities
-	rawEntriesByPriority := make(map[int][]rawRoutingEntry, 0)
+	rawEntriesByPriority := make(map[int][]rawRoutingEntry)
 
 	for _, rawRoutingEntry := range rawRoutingContainer.Module {
 		rawEntriesByPriority[rawRoutingEntry.Priority] = append(
@@ -201,7 +205,7 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 	return routingRules, nil
 }
 
-// checks if a message content matches the requirements of the routing rule
+// RoutingMatchMessage checks if a message content matches the requirements of the routing rule
 func RoutingMatchMessage(routingEntry RoutingRule, author, bot *discordgo.User, channel *discordgo.Channel, content string, args []string, prefix string) (match bool) {
 	// ignore bots?
 	if !routingEntry.AllowBots {
@@ -245,15 +249,15 @@ func RoutingMatchMessage(routingEntry RoutingRule, author, bot *discordgo.User, 
 		if !routingEntry.DoNotPrependPrefix {
 			matchContent = strings.TrimSpace(strings.TrimLeft(content, prefix))
 		}
-		if routingEntry.Regex.MatchString(matchContent) {
-			match = true
+		if !routingEntry.Regex.MatchString(matchContent) {
+			return false
 		}
 	}
 
 	return true
 }
 
-// Trims the prefix and returns all arguments, including the command, and the prefix used
+// GetMessageArguments trims the prefix and returns all arguments, including the command, and the prefix used
 func GetMessageArguments(content string, prefixes []string) (args []string, prefix string) {
 	for _, possiblePrefix := range prefixes {
 		if strings.HasPrefix(content, possiblePrefix) {
@@ -271,7 +275,7 @@ func GetMessageArguments(content string, prefixes []string) (args []string, pref
 	return []string{content}, prefix
 }
 
-// figures out the correct destinations for an event container
+// ContainerDestinations figures out the correct destinations for an event container
 func ContainerDestinations(session *discordgo.Session, routingConfig []RoutingRule, container EventContainer) (lambdaDestinations, processorDestinations, aliases []string) {
 	var handled int
 

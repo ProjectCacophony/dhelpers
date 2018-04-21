@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// sends a message to a specific channel, takes care of splitting and sanitising the content
+// SendMessage sends a message to a specific channel, takes care of splitting and sanitising the content
 func SendMessage(channelID, content string) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	content = cleanDiscordContent(content)
@@ -31,7 +31,7 @@ func SendMessage(channelID, content string) (messages []*discordgo.Message, err 
 	return messages, nil
 }
 
-// sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content
+// SendMessageBoxed sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content
 func SendMessageBoxed(channelID, content string) (messages []*discordgo.Message, err error) {
 	var newMessages []*discordgo.Message
 	content = cleanDiscordContent(content)
@@ -45,7 +45,7 @@ func SendMessageBoxed(channelID, content string) (messages []*discordgo.Message,
 	return messages, nil
 }
 
-// sends an embed to a specific channel, takes care of splitting and sanitising the content
+// SendEmbed sends an embed to a specific channel, takes care of splitting and sanitising the content
 func SendEmbed(channelID string, embed *discordgo.MessageEmbed) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	message, err = cache.GetDiscord().ChannelMessageSendEmbed(channelID, truncateEmbed(embed))
@@ -56,12 +56,12 @@ func SendEmbed(channelID string, embed *discordgo.MessageEmbed) (messages []*dis
 	return messages, nil
 }
 
-// sends a file to a specific channel, takes care of splitting and sanitising the content
+// SendFile sends a file to a specific channel, takes care of splitting and sanitising the content
 func SendFile(channelID string, filename string, reader io.Reader, message string) (messages []*discordgo.Message, err error) {
 	return SendComplex(channelID, &discordgo.MessageSend{File: &discordgo.File{Name: filename, Reader: reader}, Content: message})
 }
 
-// sends a discordgo.MessageSend object to a specific channel, takes care of splitting and sanitising the content
+// SendComplex sends a discordgo.MessageSend object to a specific channel, takes care of splitting and sanitising the content
 func SendComplex(channelID string, data *discordgo.MessageSend) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	if data.Embed != nil {
@@ -92,28 +92,26 @@ func SendComplex(channelID string, data *discordgo.MessageSend) (messages []*dis
 	return messages, nil
 }
 
-// edits a specific message, takes care of sanitising the content
+// EditMessage edits a specific message, takes care of sanitising the content
 func EditMessage(channelID, messageID, content string) (message *discordgo.Message, err error) {
-	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
 	content = cleanDiscordContent(content)
+	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
 	if err != nil {
 		return nil, err
-	} else {
-		return message, err
 	}
+	return message, err
 }
 
-// edits a specific embed, takes care of sanitising the content
+// EditEmbed edits a specific embed, takes care of sanitising the content
 func EditEmbed(channelID, messageID string, embed *discordgo.MessageEmbed) (message *discordgo.Message, err error) {
 	message, err = cache.GetDiscord().ChannelMessageEditEmbed(channelID, messageID, truncateEmbed(embed))
 	if err != nil {
 		return nil, err
-	} else {
-		return message, err
 	}
+	return message, err
 }
 
-// edits a specific message using a discordgo.MessageEdit object, takes care of sanitising the content
+// EditComplex edits a specific message using a discordgo.MessageEdit object, takes care of sanitising the content
 func EditComplex(data *discordgo.MessageEdit) (message *discordgo.Message, err error) {
 	if data.Embed != nil {
 		data.Embed = truncateEmbed(data.Embed)
@@ -125,9 +123,8 @@ func EditComplex(data *discordgo.MessageEdit) (message *discordgo.Message, err e
 	message, err = cache.GetDiscord().ChannelMessageEditComplex(data)
 	if err != nil {
 		return nil, err
-	} else {
-		return message, err
 	}
+	return message, err
 }
 
 func pagify(text string, delimiter string) []string {
@@ -185,8 +182,8 @@ func autoPagify(text string) (pages []string) {
 }
 
 func cleanDiscordContent(content string) (output string) {
-	output = strings.Replace(content, "@everyone", "@"+ZERO_WIDTH_SPACE+"everyone", -1)
-	output = strings.Replace(output, "@here", "@"+ZERO_WIDTH_SPACE+"here", -1)
+	output = strings.Replace(content, "@everyone", "@"+ZeroWidthSpace+"everyone", -1)
+	output = strings.Replace(output, "@here", "@"+ZeroWidthSpace+"here", -1)
 	return output
 }
 

@@ -9,8 +9,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
-// unique key for every discord event for deduplication
-func GetEventKey(receivedAt time.Time, i interface{}) (key string) {
+// GetEventKey returns an unique key for a discordgo event for deduplication
+func GetEventKey(i interface{}) (key string) {
 	switch t := i.(type) {
 	case *discordgo.GuildCreate:
 		return "project-d:gateway:event-" + string(GuildCreateEventType) + "-" + GetMD5Hash(fmt.Sprintf("%v", t.Guild))
@@ -64,7 +64,7 @@ func GetEventKey(receivedAt time.Time, i interface{}) (key string) {
 	return ""
 }
 
-// Returns true if the event key is new, returns false if the event key has already been handled by other gateways
+// IsNewEvent returns true if the event key is new, returns false if the event key has already been handled by other gateways
 func IsNewEvent(redisClient *redis.Client, source, eventKey string) (new bool) {
 	set, err := redisClient.SetNX(eventKey+":"+source, true, time.Minute*5).Result()
 	if err != nil {
