@@ -7,7 +7,12 @@ stages:
   - test
 
 before_script:
-  - go get ${GO_PROJECT}
+  # create symlink to ${CI_PROJECT_DIR} in ${GOPATH} and cd there
+  - mkdir -p ${GOPATH}/src/gitlab.com/${CI_PROJECT_NAMESPACE}
+  - cd ${GOPATH}/src/gitlab.com/${CI_PROJECT_NAMESPACE}
+  - ln -s ${CI_PROJECT_DIR}
+  - cd ${CI_PROJECT_NAME}
+  # install dependencies
   - go get -v .
   - go get -v gopkg.in/alecthomas/gometalinter.v2
 
