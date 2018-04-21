@@ -4,21 +4,21 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var (
-	logger      *logrus.Logger
+	logger      *logrus.Entry
 	loggerMutex sync.RWMutex
 )
 
-func SetLogger(s *logrus.Logger) {
+func SetLogger(s *logrus.Entry) {
 	loggerMutex.Lock()
 	logger = s
 	loggerMutex.Unlock()
 }
 
-func GetLogger() *logrus.Logger {
+func GetLogger() *logrus.Entry {
 	loggerMutex.RLock()
 	defer loggerMutex.RUnlock()
 
