@@ -225,32 +225,34 @@ func RoutingMatchMessage(routingEntry RoutingRule, author, bot *discordgo.User, 
 			return false
 		}
 	}
-	// check prefix if should check
-	if !routingEntry.DoNotPrependPrefix {
-		if prefix == "" {
-			return false
-		}
-	}
-	// match beginning if beginning is set
-	if routingEntry.Beginning != "" {
-		if routingEntry.CaseSensitive {
-			if args[0] != routingEntry.Beginning {
-				return false
-			}
-		} else {
-			if strings.ToLower(args[0]) != strings.ToLower(routingEntry.Beginning) {
-				return false
-			}
-		}
-	}
-	// match regex if regex is set
-	if routingEntry.Regex != nil {
-		matchContent := content
+	if routingEntry.Beginning != "" || routingEntry.Regex != nil {
+		// check prefix if should check
 		if !routingEntry.DoNotPrependPrefix {
-			matchContent = strings.TrimSpace(strings.TrimLeft(content, prefix))
+			if prefix == "" {
+				return false
+			}
 		}
-		if !routingEntry.Regex.MatchString(matchContent) {
-			return false
+		// match beginning if beginning is set
+		if routingEntry.Beginning != "" {
+			if routingEntry.CaseSensitive {
+				if args[0] != routingEntry.Beginning {
+					return false
+				}
+			} else {
+				if strings.ToLower(args[0]) != strings.ToLower(routingEntry.Beginning) {
+					return false
+				}
+			}
+		}
+		// match regex if regex is set
+		if routingEntry.Regex != nil {
+			matchContent := content
+			if !routingEntry.DoNotPrependPrefix {
+				matchContent = strings.TrimSpace(strings.TrimLeft(content, prefix))
+			}
+			if !routingEntry.Regex.MatchString(matchContent) {
+				return false
+			}
 		}
 	}
 
