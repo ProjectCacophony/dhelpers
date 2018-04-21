@@ -8,6 +8,10 @@ import (
 // T returns the translation for the given message ID
 // Example: T("HelloWorld")
 func T(messageID string) (result string) {
+	if cache.GetLocalizationBundle() == nil {
+		return messageID
+	}
+
 	// on panic return message ID
 	defer func() {
 		err := recover()
@@ -17,8 +21,7 @@ func T(messageID string) (result string) {
 	}()
 
 	translation, err := i18n.NewLocalizer(cache.GetLocalizationBundle(), "en").Localize(&i18n.LocalizeConfig{
-		MessageID:   messageID,
-		PluralCount: 1,
+		MessageID: messageID,
 	})
 	if err != nil {
 		return messageID
@@ -29,6 +32,10 @@ func T(messageID string) (result string) {
 // Tf returns the translation for the given message ID applying the fields
 // Example: Tf("HelloWorld", "key", "value")
 func Tf(messageID string, fields ...string) (result string) {
+	if cache.GetLocalizationBundle() == nil {
+		return messageID
+	}
+
 	// on panic return message ID
 	defer func() {
 		err := recover()
@@ -48,7 +55,6 @@ func Tf(messageID string, fields ...string) (result string) {
 	translation, err := i18n.NewLocalizer(cache.GetLocalizationBundle(), "en").Localize(&i18n.LocalizeConfig{
 		MessageID:    messageID,
 		TemplateData: data,
-		PluralCount:  1,
 	})
 	if err != nil {
 		return messageID
@@ -59,6 +65,10 @@ func Tf(messageID string, fields ...string) (result string) {
 // Tfc returns the translation for the given message ID applying the fields and pluralization count
 // Example: Tfc("HelloWorld", 3, "key", "value")
 func Tfc(messageID string, count int, fields ...string) (result string) {
+	if cache.GetLocalizationBundle() == nil {
+		return messageID
+	}
+
 	// on panic return message ID
 	defer func() {
 		err := recover()

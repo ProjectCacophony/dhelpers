@@ -12,7 +12,51 @@ import (
 // SendMessage sends a message to a specific channel, takes care of splitting and sanitising the content
 func SendMessage(channelID, content string) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
-	content = cleanDiscordContent(content)
+	content = cleanDiscordContent(T(content))
+	if len(content) > 2000 {
+		for _, page := range autoPagify(content) {
+			message, err = cache.GetDiscord().ChannelMessageSend(channelID, page)
+			if err != nil {
+				return messages, err
+			}
+			messages = append(messages, message)
+		}
+	} else {
+		message, err = cache.GetDiscord().ChannelMessageSend(channelID, content)
+		if err != nil {
+			return messages, err
+		}
+		messages = append(messages, message)
+	}
+	return messages, nil
+}
+
+// SendMessagef sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields
+func SendMessagef(channelID, content string, fields ...string) (messages []*discordgo.Message, err error) {
+	var message *discordgo.Message
+	content = cleanDiscordContent(Tf(content, fields...))
+	if len(content) > 2000 {
+		for _, page := range autoPagify(content) {
+			message, err = cache.GetDiscord().ChannelMessageSend(channelID, page)
+			if err != nil {
+				return messages, err
+			}
+			messages = append(messages, message)
+		}
+	} else {
+		message, err = cache.GetDiscord().ChannelMessageSend(channelID, content)
+		if err != nil {
+			return messages, err
+		}
+		messages = append(messages, message)
+	}
+	return messages, nil
+}
+
+// SendMessagefc sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields, and applying pluralization
+func SendMessagefc(channelID, content string, count int, fields ...string) (messages []*discordgo.Message, err error) {
+	var message *discordgo.Message
+	content = cleanDiscordContent(Tfc(content, count, fields...))
 	if len(content) > 2000 {
 		for _, page := range autoPagify(content) {
 			message, err = cache.GetDiscord().ChannelMessageSend(channelID, page)
@@ -34,7 +78,7 @@ func SendMessage(channelID, content string) (messages []*discordgo.Message, err 
 // SendMessageBoxed sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content
 func SendMessageBoxed(channelID, content string) (messages []*discordgo.Message, err error) {
 	var newMessages []*discordgo.Message
-	content = cleanDiscordContent(content)
+	content = cleanDiscordContent(T(content))
 	for _, page := range autoPagify(content) {
 		newMessages, err = SendMessage(channelID, "```"+page+"```")
 		if err != nil {
@@ -94,7 +138,27 @@ func SendComplex(channelID string, data *discordgo.MessageSend) (messages []*dis
 
 // EditMessage edits a specific message, takes care of sanitising the content
 func EditMessage(channelID, messageID, content string) (message *discordgo.Message, err error) {
-	content = cleanDiscordContent(content)
+	content = cleanDiscordContent(T(content))
+	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
+	if err != nil {
+		return nil, err
+	}
+	return message, err
+}
+
+// EditMessagef edits a specific message, takes care of sanitising the content, and replacing the fields
+func EditMessagef(channelID, messageID, content string, fields ...string) (message *discordgo.Message, err error) {
+	content = cleanDiscordContent(Tf(content, fields...))
+	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
+	if err != nil {
+		return nil, err
+	}
+	return message, err
+}
+
+// EditMessagefc edits a specific message, takes care of sanitising the content, and replacing the fields, and applying pluralization
+func EditMessagefc(channelID, messageID, content string, count int, fields ...string) (message *discordgo.Message, err error) {
+	content = cleanDiscordContent(Tfc(content, count, fields...))
 	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
 	if err != nil {
 		return nil, err
