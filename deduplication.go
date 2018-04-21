@@ -2,11 +2,11 @@ package dhelpers
 
 import (
 	"fmt"
-
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/go-redis/redis"
+	"gitlab.com/project-d-collab/dhelpers/cache"
 )
 
 // GetEventKey returns an unique key for a discordgo event for deduplication
@@ -68,7 +68,7 @@ func GetEventKey(i interface{}) (key string) {
 func IsNewEvent(redisClient *redis.Client, source, eventKey string) (new bool) {
 	set, err := redisClient.SetNX(eventKey+":"+source, true, time.Minute*5).Result()
 	if err != nil {
-		fmt.Println("error doing deduplication:", err.Error())
+		cache.GetLogger().Errorln("error doing deduplication:", err.Error())
 		return false
 	}
 
