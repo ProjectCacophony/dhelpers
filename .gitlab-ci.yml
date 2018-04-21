@@ -14,9 +14,13 @@ before_script:
   - go get -v gopkg.in/alecthomas/gometalinter.v2
   - gometalinter.v2 --install
 
-tests:
+lint:
   stage: test
   script:
     - diff <(gofmt -d .) <(echo -n)
-    - go test -v -race ./...
     - gometalinter.v2 ./... --deadline 5m
+
+testing:
+  stage: test
+  script:
+    - go test -v -race ./...
