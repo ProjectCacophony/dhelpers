@@ -1,8 +1,5 @@
 image: golang:1.10
 
-variables:
-  GO_PROJECT: gitlab.com/project-d-collab/dhelpers
-
 stages:
   - test
 
@@ -15,6 +12,7 @@ before_script:
   # install dependencies
   - go get -v .
   - go get -v gopkg.in/alecthomas/gometalinter.v2
+  - gometalinter.v2 --install
 
 tests:
   stage: test
