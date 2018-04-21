@@ -13,8 +13,7 @@ type EventContainer struct {
 	ReceivedAt     time.Time
 	GatewayStarted time.Time
 	Modules        []string
-	Destinations   []string
-	Alias          []string
+	Destinations   []DestinationData
 	Prefix         string
 	Args           []string
 	BotUserID      string
@@ -43,4 +42,21 @@ type EventContainer struct {
 	MessageReactionRemoveAll *discordgo.MessageReactionRemoveAll
 	MessageUpdate            *discordgo.MessageUpdate
 	PresenceUpdate           *discordgo.PresenceUpdate
+}
+
+// DestinationType is a type for destination types
+type DestinationType string
+
+// defines possible destination types
+const (
+	LambdaDestinationType DestinationType = "lambda"
+	SqsDestinationType                    = "sqs"
+)
+
+// DestinationData contains all information for one destination
+type DestinationData struct {
+	Type          DestinationType
+	Name          string
+	ErrorHandlers []ErrorHandlerType
+	Alias         string
 }

@@ -53,6 +53,15 @@ const (
 	//VoiceStateUpdateEventType         = "VOICE_STATE_UPDATE"
 )
 
+// ErrorHandlerType is the Error Handler Type used for the EventContainer
+type ErrorHandlerType string
+
+// defines ErrorHandler types
+const (
+	SentryErrorHandler  ErrorHandlerType = "sentry"
+	DiscordErrorHandler                  = "discord"
+)
+
 // Routing JSON Config
 type rawRoutingEntryContainer struct {
 	Module []rawRoutingEntry
@@ -65,11 +74,12 @@ type rawRoutingEntry struct {
 	AllowMyself bool // if set to true, will trigger for messages by this bot itself
 	AllowDM     bool
 
-	Events      []EventType
-	Module      string
-	Destination string
-	Requirement []rawRoutingRequirementEntry // will only get matched with EventTypeMessageCreate, EventTypeMessageUpdate, or EventTypeMessageDelete, will match everything if slice is empty
-	Priority    int                          // higher runs before lower
+	Events        []EventType
+	Module        string
+	Destination   string
+	Requirement   []rawRoutingRequirementEntry // will only get matched with EventTypeMessageCreate, EventTypeMessageUpdate, or EventTypeMessageDelete, will match everything if slice is empty
+	Priority      int                          // higher runs before lower
+	ErrorHandlers []string
 }
 
 type rawRoutingRequirementEntry struct {
@@ -83,6 +93,7 @@ type rawRoutingRequirementEntry struct {
 // RoutingRule is a a compiled routing rule used for matching
 type RoutingRule struct {
 	Event              EventType
+	ErrorHandlers      []ErrorHandlerType
 	Module             string
 	DestinationMain    string
 	DestinationSub     string
@@ -159,6 +170,15 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 					DoNotPrependPrefix: false,
 					CaseSensitive:      false,
 				}
+				for _, errorHandler := range rawRule.ErrorHandlers {
+					switch errorHandler {
+					case string(SentryErrorHandler):
+						newEntry.ErrorHandlers = append(newEntry.ErrorHandlers, SentryErrorHandler)
+					case string(DiscordErrorHandler):
+						newEntry.ErrorHandlers = append(newEntry.ErrorHandlers, DiscordErrorHandler)
+					}
+				}
+
 				if (ruleType == MessageCreateEventType ||
 					ruleType == MessageUpdateEventType ||
 					ruleType == MessageDeleteEventType) &&
@@ -278,7 +298,7 @@ func GetMessageArguments(content string, prefixes []string) (args []string, pref
 }
 
 // ContainerDestinations figures out the correct destinations for an event container
-func ContainerDestinations(session *discordgo.Session, routingConfig []RoutingRule, container EventContainer) (lambdaDestinations, processorDestinations, aliases []string) {
+func ContainerDestinations(session *discordgo.Session, routingConfig []RoutingRule, container EventContainer) (destinations []DestinationData) {
 	var handled int
 
 	for _, routingEntry := range routingConfig {
@@ -347,12 +367,22 @@ func ContainerDestinations(session *discordgo.Session, routingConfig []RoutingRu
 		}
 
 		handled++
-		aliases = append(aliases, routingEntry.Alias)
-		if routingEntry.DestinationMain == "lambda" {
-			lambdaDestinations = append(lambdaDestinations, routingEntry.DestinationSub)
-		}
-		if routingEntry.DestinationMain == "sqs" {
-			processorDestinations = append(processorDestinations, routingEntry.DestinationSub)
+
+		switch routingEntry.DestinationMain {
+		case "lambda":
+			destinations = append(destinations, DestinationData{
+				Type:          LambdaDestinationType,
+				Name:          routingEntry.DestinationSub,
+				ErrorHandlers: routingEntry.ErrorHandlers,
+				Alias:         routingEntry.Alias,
+			})
+		case "sqs":
+			destinations = append(destinations, DestinationData{
+				Type:          SqsDestinationType,
+				Name:          routingEntry.DestinationSub,
+				ErrorHandlers: routingEntry.ErrorHandlers,
+				Alias:         routingEntry.Alias,
+			})
 		}
 	}
 
