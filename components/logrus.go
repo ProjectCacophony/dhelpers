@@ -10,7 +10,7 @@ import (
 )
 
 // InitLogger initialises and caches the logging server
-// will send warning and above messages to Discord if the DISCORD_LOGGING_WEBHOOK_URL environemnt variable is set
+// will send warning and above messages to Discord if the DISCORD_LOGGING_WEBHOOK_URL environment variable is set
 func InitLogger(service string) {
 	format := new(prefixed.TextFormatter)
 	format.TimestampFormat = "02-01-06 15:04:05.000"

@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -12,19 +11,17 @@ var (
 	loggerMutex sync.RWMutex
 )
 
+// SetLogger caches a logrus entry for future use
 func SetLogger(s *logrus.Entry) {
 	loggerMutex.Lock()
 	logger = s
 	loggerMutex.Unlock()
 }
 
+// GetLogger returns a cached logrus entry
 func GetLogger() *logrus.Entry {
 	loggerMutex.RLock()
 	defer loggerMutex.RUnlock()
-
-	if logger == nil {
-		panic(errors.New("Tried to get logger before logger#SetLogger() was called"))
-	}
 
 	return logger
 }
