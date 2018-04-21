@@ -3,6 +3,7 @@ package state
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/json-iterator/go"
+	"gitlab.com/project-d-collab/dhelpers/cache"
 )
 
 // Guild returns the specified Guild from the shard state, returns ErrStateNotFound if not found
@@ -99,10 +100,21 @@ func User(userID string) (user *discordgo.User, err error) {
 
 // AllGuildIDs returns a list of all Guild IDs from the shared state
 func AllGuildIDs() (guildIDs []string, err error) {
-	return readStateSet(guildIdsSetKey())
+	return readStateSet(allGuildIdsSetKey())
 }
 
 // AllUserIDs returns a list of all User IDs from the shared state
 func AllUserIDs() (userIDs []string, err error) {
-	return readStateSet(userIdsSetKey())
+	return readStateSet(allUserIdsSetKey())
+}
+
+// GuildUserIDs returns a list of all User IDs in a specific Guild from the shared state
+func GuildUserIDs(guildID string) (userIDs []string, err error) {
+	return readStateSet(guildUserIdsSetKey(guildUserIdsSetKey(guildID)))
+}
+
+// IsMember true if the User is a member of the specified Guild
+func IsMember(guildID, userID string) (isMember bool, err error) {
+	isMember, err = cache.GetRedisClient().SIsMember(guildUserIdsSetKey(guildID), userID).Result()
+	return isMember, err
 }

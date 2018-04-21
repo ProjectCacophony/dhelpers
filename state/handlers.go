@@ -1,8 +1,13 @@
 package state
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"fmt"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 func onReady(_ *discordgo.Session, ready *discordgo.Ready) (err error) {
+	fmt.Println("running onReady")
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -18,7 +23,7 @@ func onReady(_ *discordgo.Session, ready *discordgo.Ready) (err error) {
 		if err != nil {
 			return err
 		}
-		err = addToStateSet(guildIdsSetKey(), guild.ID)
+		err = addToStateSet(allGuildIdsSetKey(), guild.ID)
 		if err != nil {
 			return err
 		}
@@ -41,7 +46,11 @@ func onReady(_ *discordgo.Session, ready *discordgo.Ready) (err error) {
 			if err != nil {
 				return err
 			}
-			err = addToStateSet(userIdsSetKey(), member.User.ID)
+			err = addToStateSet(allUserIdsSetKey(), member.User.ID)
+			if err != nil {
+				return err
+			}
+			err = addToStateSet(guildUserIdsSetKey(member.GuildID), member.User.ID)
 			if err != nil {
 				return err
 			}
@@ -60,6 +69,7 @@ func onReady(_ *discordgo.Session, ready *discordgo.Ready) (err error) {
 }
 
 func guildAdd(guild *discordgo.Guild) (err error) {
+	fmt.Println("running guildAdd", guild.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -81,7 +91,11 @@ func guildAdd(guild *discordgo.Guild) (err error) {
 		if err != nil {
 			return err
 		}
-		err = addToStateSet(userIdsSetKey(), member.User.ID)
+		err = addToStateSet(allUserIdsSetKey(), member.User.ID)
+		if err != nil {
+			return err
+		}
+		err = addToStateSet(guildUserIdsSetKey(member.GuildID), member.User.ID)
 		if err != nil {
 			return err
 		}
@@ -115,11 +129,12 @@ func guildAdd(guild *discordgo.Guild) (err error) {
 	if err != nil {
 		return err
 	}
-	err = addToStateSet(guildIdsSetKey(), guild.ID)
+	err = addToStateSet(allGuildIdsSetKey(), guild.ID)
 	return err
 }
 
 func guildRemove(guild *discordgo.Guild) (err error) {
+	fmt.Println("running guildRemove", guild.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -128,11 +143,12 @@ func guildRemove(guild *discordgo.Guild) (err error) {
 	if err != nil {
 		return err
 	}
-	err = removeFromStateSet(guildIdsSetKey(), guild.ID)
+	err = removeFromStateSet(allGuildIdsSetKey(), guild.ID)
 	return err
 }
 
 func memberAdd(member *discordgo.Member) (err error) {
+	fmt.Println("running memberAdd", member.GuildID, member.User.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -169,11 +185,16 @@ func memberAdd(member *discordgo.Member) (err error) {
 	if err != nil {
 		return err
 	}
-	err = addToStateSet(userIdsSetKey(), member.User.ID)
+	err = addToStateSet(allUserIdsSetKey(), member.User.ID)
+	if err != nil {
+		return err
+	}
+	err = addToStateSet(guildUserIdsSetKey(member.GuildID), member.User.ID)
 	return err
 }
 
 func memberRemove(member *discordgo.Member) (err error) {
+	fmt.Println("running memberRemove", member.GuildID, member.User.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -192,28 +213,25 @@ func memberRemove(member *discordgo.Member) (err error) {
 	// viable?
 	allGuildIDs, err := AllGuildIDs()
 	if err == nil {
-		var isOnOtherGuilds bool
+		var isMember bool
 		for _, guildID := range allGuildIDs {
 			if guildID == member.GuildID {
 				continue
 			}
-			var botGuild *discordgo.Guild
-			botGuild, err = Guild(guildID)
-			if err == nil {
-				for _, botGuildMember := range botGuild.Members {
-					if botGuildMember.User.ID == member.User.ID {
-						isOnOtherGuilds = true
-						break
-					}
-				}
+			isMember, err = IsMember(guildID, member.User.ID)
+			if err != nil {
+				return err
+			}
+			if isMember {
+				break
 			}
 		}
-		if !isOnOtherGuilds {
+		if !isMember {
 			err = deleteStateObject(userKey(member.User.ID))
 			if err != nil {
 				return err
 			}
-			err = removeFromStateSet(userIdsSetKey(), member.User.ID)
+			err = removeFromStateSet(allUserIdsSetKey(), member.User.ID)
 			if err != nil {
 				return err
 			}
@@ -228,6 +246,10 @@ func memberRemove(member *discordgo.Member) (err error) {
 			break
 		}
 	}
+	err = removeFromStateSet(guildUserIdsSetKey(member.GuildID), member.User.ID)
+	if err != nil {
+		return err
+	}
 
 	// cache guild
 	err = updateStateObject(guildKey(previousGuild.ID), previousGuild)
@@ -235,6 +257,7 @@ func memberRemove(member *discordgo.Member) (err error) {
 }
 
 func roleAdd(guildID string, role *discordgo.Role) (err error) {
+	fmt.Println("running roleAdd", guildID, role.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -263,6 +286,7 @@ func roleAdd(guildID string, role *discordgo.Role) (err error) {
 }
 
 func roleRemove(guildID, roleID string) (err error) {
+	fmt.Println("running roleRemove", guildID, roleID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -286,6 +310,7 @@ func roleRemove(guildID, roleID string) (err error) {
 }
 
 func emojiAdd(guildID string, emoji *discordgo.Emoji) (err error) {
+	fmt.Println("running emojiAdd", guildID, emoji.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -314,6 +339,7 @@ func emojiAdd(guildID string, emoji *discordgo.Emoji) (err error) {
 }
 
 func emojisAdd(guildID string, emojis []*discordgo.Emoji) (err error) {
+	fmt.Println("running emojisAdd", guildID, len(emojis))
 	for _, emoji := range emojis {
 		err = emojiAdd(guildID, emoji)
 		if err != nil {
@@ -324,6 +350,7 @@ func emojisAdd(guildID string, emojis []*discordgo.Emoji) (err error) {
 }
 
 func channelAdd(channel *discordgo.Channel) (err error) {
+	fmt.Println("running channelAdd", channel.GuildID, channel.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -367,6 +394,7 @@ func channelAdd(channel *discordgo.Channel) (err error) {
 }
 
 func channelRemove(channel *discordgo.Channel) (err error) {
+	fmt.Println("running channelRemove", channel.GuildID, channel.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
@@ -405,6 +433,7 @@ func channelRemove(channel *discordgo.Channel) (err error) {
 }
 
 func presenceAdd(guildID string, presence *discordgo.Presence) (err error) {
+	fmt.Println("running presenceAdd", guildID, presence.User.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
 
