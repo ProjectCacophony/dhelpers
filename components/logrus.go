@@ -3,8 +3,8 @@ package components
 import (
 	"os"
 
+	"github.com/Seklfreak/logrus-prefixed-formatter"
 	"github.com/sirupsen/logrus"
-	"github.com/x-cray/logrus-prefixed-formatter"
 	"gitlab.com/project-d-collab/dhelpers/cache"
 )
 
@@ -23,5 +23,5 @@ func InitLogger(service string) {
 	// log.Formatter = &logrus.TextFormatter{ForceColors: true, FullTimestamp: true, TimestampFormat: "02-01-06 15:04:05.000"}
 	log.Hooks = make(logrus.LevelHooks)
 
-	cache.SetLogger(log.WithFields(logrus.Fields{"prefix": service}))
+	cache.SetLogger(log.WithFields(logrus.Fields{"service": service}))
 }

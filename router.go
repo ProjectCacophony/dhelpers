@@ -53,15 +53,6 @@ const (
 	//VoiceStateUpdateEventType         = "VOICE_STATE_UPDATE"
 )
 
-// ErrorHandlerType is the Error Handler Type used for the EventContainer
-type ErrorHandlerType string
-
-// defines ErrorHandler types
-const (
-	SentryErrorHandler  ErrorHandlerType = "sentry"
-	DiscordErrorHandler                  = "discord"
-)
-
 // Routing JSON Config
 type rawRoutingEntryContainer struct {
 	Module []rawRoutingEntry
