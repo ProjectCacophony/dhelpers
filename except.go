@@ -12,7 +12,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/getsentry/raven-go"
 	"gitlab.com/project-d-collab/dhelpers/cache"
-	"gitlab.com/project-d-collab/dhelpers/state"
 )
 
 // ErrorHandlerType is the Error Handler Type used for the EventContainer
@@ -66,9 +65,9 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 				raven.CaptureError(fmt.Errorf(spew.Sdump(err)), data)
 			}
 		case DiscordErrorHandler:
-			if msg != nil {
+			if msg != nil && cache.GetDiscord() != nil {
 				// send message to discord, or add reaction if no message permission
-				channelPermissions, chErr := state.UserChannelPermissions(event.BotUserID, msg.ChannelID)
+				channelPermissions, chErr := cache.GetDiscord().UserChannelPermissions(event.BotUserID, msg.ChannelID)
 				if chErr == nil {
 					if channelPermissions&discordgo.PermissionSendMessages == discordgo.PermissionSendMessages {
 						errorMessage := err.Error()
