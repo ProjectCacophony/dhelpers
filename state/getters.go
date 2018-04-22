@@ -118,3 +118,102 @@ func IsMember(guildID, userID string) (isMember bool, err error) {
 	isMember, err = cache.GetRedisClient().SIsMember(guildUserIdsSetKey(guildID), userID).Result()
 	return isMember, err
 }
+
+// UserChannelPermissions returns the permission of a user in a channel
+func UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
+	var channel *discordgo.Channel
+	channel, err = Channel(channelID)
+	if err != nil {
+		return
+	}
+
+	var guild *discordgo.Guild
+	guild, err = Guild(channel.GuildID)
+	if err != nil {
+		return
+	}
+
+	if userID == guild.OwnerID {
+		apermissions = discordgo.PermissionAll
+		return
+	}
+
+	var member *discordgo.Member
+	member, err = Member(guild.ID, userID)
+	if err != nil {
+		return
+	}
+
+	return memberPermissions(guild, channel, member), nil
+}
+
+// MemberPermissions calculates the permissions for a member
+// Source: https://github.com/bwmarrin/discordgo/blob/develop/restapi.go#L503
+func memberPermissions(guild *discordgo.Guild, channel *discordgo.Channel, member *discordgo.Member) (apermissions int) {
+	userID := member.User.ID
+
+	if userID == guild.OwnerID {
+		apermissions = discordgo.PermissionAll
+		return
+	}
+
+	for _, role := range guild.Roles {
+		if role.ID == guild.ID {
+			apermissions |= role.Permissions
+			break
+		}
+	}
+
+	for _, role := range guild.Roles {
+		for _, roleID := range member.Roles {
+			if role.ID == roleID {
+				apermissions |= role.Permissions
+				break
+			}
+		}
+	}
+
+	if apermissions&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator {
+		apermissions |= discordgo.PermissionAll
+	}
+
+	// Apply @everyone overrides from the channel.
+	for _, overwrite := range channel.PermissionOverwrites {
+		if guild.ID == overwrite.ID {
+			apermissions &= ^overwrite.Deny
+			apermissions |= overwrite.Allow
+			break
+		}
+	}
+
+	denies := 0
+	allows := 0
+
+	// Member overwrites can override role overrides, so do two passes
+	for _, overwrite := range channel.PermissionOverwrites {
+		for _, roleID := range member.Roles {
+			if overwrite.Type == "role" && roleID == overwrite.ID {
+				denies |= overwrite.Deny
+				allows |= overwrite.Allow
+				break
+			}
+		}
+	}
+
+	apermissions &= ^denies
+	apermissions |= allows
+
+	for _, overwrite := range channel.PermissionOverwrites {
+		if overwrite.Type == "member" && overwrite.ID == userID {
+			apermissions &= ^overwrite.Deny
+			apermissions |= overwrite.Allow
+			break
+		}
+	}
+
+	if apermissions&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator {
+		apermissions |= discordgo.PermissionAllChannel
+	}
+
+	return apermissions
+}

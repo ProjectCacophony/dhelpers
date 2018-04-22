@@ -12,6 +12,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/getsentry/raven-go"
 	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/project-d-collab/dhelpers/state"
 )
 
 // ErrorHandlerType is the Error Handler Type used for the EventContainer
@@ -36,7 +37,7 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 
 	var dontLog bool
 	// don't log discord permission errors
-	if errD, ok := err.(*discordgo.RESTError); ok {
+	if errD, ok := err.(*discordgo.RESTError); ok && errD.Message != nil {
 		if errD.Message.Code == discordgo.ErrCodeMissingPermissions ||
 			errD.Message.Code == discordgo.ErrCodeMissingAccess ||
 			errD.Message.Code == discordgo.ErrCodeCannotSendMessagesToThisUser {
@@ -66,12 +67,37 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 			}
 		case DiscordErrorHandler:
 			if msg != nil {
-				// send message to discord
-				// TODO: check channel permissions, if no permission to send message add reaction using addPermissionsErrorReaction
-				SendMessage( // nolint: errcheck
-					msg.ChannelID,
-					"**Something went wrong.** <a:ablobsadcloud:437572939701944322>\n```\nError: "+err.Error()+"\n```I sent our top people to fix the issue as soon as possible. <a:ablobreach:437572330026434560>",
-				)
+				// send message to discord, or add reaction if no message permission
+				channelPermissions, chErr := state.UserChannelPermissions(event.BotUserID, msg.ChannelID)
+				if chErr == nil {
+					if channelPermissions&discordgo.PermissionSendMessages == discordgo.PermissionSendMessages {
+						errorMessage := err.Error()
+						if errD, ok := err.(*discordgo.RESTError); ok && errD.Message != nil {
+							errorMessage = errD.Message.Message
+						}
+
+						message := "**Something went wrong.** <a:ablobsadcloud:437572939701944322>\n```\nError: " + errorMessage + "\n```"
+						if !dontLog {
+							message += "I sent our top people to fix the issue as soon as possible. <a:ablobreach:437572330026434560>"
+						}
+						SendMessage( // nolint: errcheck
+							msg.ChannelID,
+							message,
+						)
+					} else if channelPermissions&discordgo.PermissionAddReactions == discordgo.PermissionAddReactions {
+						reactions := []string{
+							":blobstop:317034621953114112",
+							"a:ablobweary:394026914479865856",
+							":googlespeaknoevil:317036753074651139",
+							":notlikeblob:349342777978519562",
+							"a:ablobcry:393869333740126219",
+							"a:ablobfrown:394026913292615701",
+							"a:ablobunamused:393869335573037057",
+						}
+						rand.Seed(time.Now().Unix())
+						cache.GetDiscord().MessageReactionAdd(msg.ChannelID, msg.ID, reactions[rand.Intn(len(reactions))]) // nolint: errcheck
+					}
+				}
 			}
 		}
 	}
@@ -83,18 +109,4 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 
 		cache.GetLogger().Errorln(err.Error() + "\n\n" + string(buf[0:stackSize]))
 	}
-}
-
-func addPermissionsErrorReaction(channelID, messageID string) {
-	reactions := []string{
-		":blobstop:317034621953114112",
-		"a:ablobweary:394026914479865856",
-		":googlespeaknoevil:317036753074651139",
-		":notlikeblob:349342777978519562",
-		"a:ablobcry:393869333740126219",
-		"a:ablobfrown:394026913292615701",
-		"a:ablobunamused:393869335573037057",
-	}
-	rand.Seed(time.Now().Unix())
-	cache.GetDiscord().MessageReactionAdd(channelID, messageID, reactions[rand.Intn(len(reactions))]) // nolint: errcheck
 }
