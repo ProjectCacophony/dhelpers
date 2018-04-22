@@ -3,7 +3,12 @@ package components
 import (
 	"os"
 
+	"fmt"
+	"runtime"
+	"strings"
+
 	"github.com/Seklfreak/logrus-prefixed-formatter"
+	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/project-d-collab/dhelpers/cache"
 	"gitlab.com/project-d-collab/discordrus"
@@ -37,6 +42,38 @@ func InitLogger(service string) {
 				DisableTimestamp: true,
 			},
 		))
+	}
+
+	// setup discord logging
+	discordgo.Logger = func(msgL, caller int, format string, a ...interface{}) {
+		pc, file, line, _ := runtime.Caller(caller)
+
+		files := strings.Split(file, "/")
+		file = files[len(files)-1]
+
+		name := runtime.FuncForPC(pc).Name()
+		fns := strings.Split(name, ".")
+		name = fns[len(fns)-1]
+
+		msg := format
+		if strings.Contains(msg, "%") {
+			msg = fmt.Sprintf(format, a...)
+		}
+
+		switch msgL {
+		case discordgo.LogError:
+			log.WithFields(logrus.Fields{"service": service, "module": "discordgo"}).
+				Errorf("%s:%d:%s() %s", file, line, name, msg)
+		case discordgo.LogWarning:
+			log.WithFields(logrus.Fields{"service": service, "module": "discordgo"}).
+				Warnf("%s:%d:%s() %s", file, line, name, msg)
+		case discordgo.LogInformational:
+			log.WithFields(logrus.Fields{"service": service, "module": "discordgo"}).
+				Infof("%s:%d:%s() %s", file, line, name, msg)
+		case discordgo.LogDebug:
+			log.WithFields(logrus.Fields{"service": service, "module": "discordgo"}).
+				Debugf("%s:%d:%s() %s", file, line, name, msg)
+		}
 	}
 
 	cache.SetLogger(log.WithFields(logrus.Fields{"service": service}))
