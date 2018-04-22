@@ -110,3 +110,10 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 		cache.GetLogger().Errorln(err.Error() + "\n\n" + string(buf[0:stackSize]))
 	}
 }
+
+// CheckErr panics if err is not nil
+func CheckErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
