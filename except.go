@@ -52,7 +52,7 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 				// send message to discord
 				SendMessage( // nolint: errcheck
 					msg.ChannelID,
-					"Something went wrong. <a:ablobfrown:394026913292615701>\n```\n"+err.Error()+"\n```",
+					"**Something went wrong.** <a:ablobsadcloud:437572939701944322>\n```\nError: "+err.Error()+"\n```I sent our top people to fix the issue as soon as possible. <a:ablobreach:437572330026434560>",
 				)
 			}
 		}
@@ -62,5 +62,5 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 	buf := make([]byte, 1<<16)
 	stackSize := runtime.Stack(buf, false)
 
-	cache.GetLogger().Errorln(string(buf[0:stackSize]))
+	cache.GetLogger().Errorln(err.Error() + "\n\n" + string(buf[0:stackSize]))
 }
