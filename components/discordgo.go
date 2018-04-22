@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/bwmarrin/discordgo"
@@ -15,8 +14,8 @@ import (
 func InitDiscord() (err error) {
 	// create a new Discordgo Bot Client
 	dhelpers.SetDiscordEndpoints(os.Getenv("DISCORD_ENDPOINT"))
-	fmt.Println("set Discord Endpoint API URL to", discordgo.EndpointAPI)
-	fmt.Println("creating Discord Client, Token length:", len(os.Getenv("DISCORD_BOT_TOKEN")))
+	cache.GetLogger().Infoln("set Discord Endpoint API URL to", discordgo.EndpointAPI)
+	cache.GetLogger().Infoln("creating Discord Client, Token length:", len(os.Getenv("DISCORD_BOT_TOKEN")))
 	dg, err := discordgo.New("Bot " + os.Getenv("DISCORD_BOT_TOKEN"))
 	if err != nil {
 		return err
