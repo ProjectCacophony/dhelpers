@@ -53,15 +53,6 @@ const (
 	SqsDestinationType                    = "sqs"
 )
 
-// ErrorHandlerType is the Error Handler Type used for the EventContainer
-type ErrorHandlerType string
-
-// defines ErrorHandler types
-const (
-	SentryErrorHandler  ErrorHandlerType = "sentry"
-	DiscordErrorHandler                  = "discord"
-)
-
 // DestinationData contains all information for one destination
 type DestinationData struct {
 	Type          DestinationType
