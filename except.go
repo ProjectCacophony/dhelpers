@@ -101,7 +101,7 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 		}
 	}
 
-	if !dontLog {
+	if !dontLog && cache.GetLogger() != nil {
 		// log stacktrace
 		buf := make([]byte, 1<<16)
 		stackSize := runtime.Stack(buf, false)
