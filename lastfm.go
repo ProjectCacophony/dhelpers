@@ -80,7 +80,7 @@ func LastFmGetUserinfo(lastfmUsername string) (userData LastfmUserData, err erro
 	userData.Name = lastfmUser.RealName
 	userData.Country = lastfmUser.Country
 	if lastfmUser.PlayCount != "" {
-		userData.Scrobbles, _ = strconv.Atoi(lastfmUser.PlayCount) // nolint: errcheck
+		userData.Scrobbles, _ = strconv.Atoi(lastfmUser.PlayCount) // nolint: errcheck, gas
 	}
 
 	if len(lastfmUser.Images) > 0 {
@@ -92,7 +92,7 @@ func LastFmGetUserinfo(lastfmUsername string) (userData LastfmUserData, err erro
 	}
 
 	if lastfmUser.Registered.Unixtime != "" {
-		timeI, _ := strconv.ParseInt(lastfmUser.Registered.Unixtime, 10, 64)
+		timeI, err := strconv.ParseInt(lastfmUser.Registered.Unixtime, 10, 64)
 		if err == nil {
 			userData.AccountCreation = time.Unix(timeI, 0)
 		}

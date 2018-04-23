@@ -50,7 +50,7 @@ func FromUrls(imageUrls, descriptions []string, width, height, tileWidth, tileHe
 func FromBytes(imageDataArray [][]byte, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
 
 	// create surface with given background colour
-	backgroundColourRGB, _ := colorful.Hex(backgroundColour)
+	backgroundColourRGB, _ := colorful.Hex(backgroundColour) // nolint: errcheck, gas
 	cairoSurface := cairo.NewSurface(cairo.FORMAT_RGB24, width, height)
 	cairoSurface.SetSourceRGB(backgroundColourRGB.R, backgroundColourRGB.G, backgroundColourRGB.B)
 	cairoSurface.Paint()
