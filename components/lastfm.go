@@ -10,7 +10,7 @@ import (
 // InitLastFm initializes and caches the lastfm client
 // reads the lastfm api key from the environment variable LASTFM_API_KEY
 // reads the lastfm api secret from the environment variable LASTFM_API_SECRET
-func InitLastFm() (err error) {
+func InitLastFm() {
 	// create a new LastFM API Client
 	lastFmClient := lastfm.New(
 		os.Getenv("LASTFM_API_KEY"),
@@ -20,5 +20,5 @@ func InitLastFm() (err error) {
 	// cache client
 	cache.SetLastfFm(lastFmClient)
 
-	return nil
+	return
 }
