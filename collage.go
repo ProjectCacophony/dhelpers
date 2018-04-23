@@ -27,10 +27,10 @@ func CollageFromUrls(imageUrls, descriptions []string, width, height, tileWidth,
 			continue
 		}
 		imageData, err := NetGet(imageURL)
-		cache.GetLogger().WithField("module", "collage").Errorln("error downloading", imageURL)
 		if err == nil {
 			imageDataArray = append(imageDataArray, imageData)
 		} else {
+			cache.GetLogger().WithField("module", "collage").Errorln("error downloading", imageURL, err.Error())
 			imageDataArray = append(imageDataArray, nil)
 		}
 	}
@@ -65,7 +65,9 @@ func CollageFromBytes(imageDataArray [][]byte, descriptions []string, width, hei
 		// draw image on tile if image exists
 		if len(imageData) > 0 {
 			tileImage, _, err := image.Decode(bytes.NewReader(imageData))
-			cache.GetLogger().WithField("module", "collage").Errorln("error decoding tile image")
+			if err != nil {
+				cache.GetLogger().WithField("module", "collage").Errorln("error decoding tile image", err.Error())
+			}
 			if err == nil {
 				tileSurface := cairo.NewSurfaceFromImage(tileImage)
 				cairoSurface.SetSourceSurface(tileSurface, float64(posX), float64(posY))
