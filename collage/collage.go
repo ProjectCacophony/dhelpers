@@ -11,7 +11,7 @@ import (
 	"gitlab.com/project-d-collab/dhelpers/cache"
 )
 
-// CollageFromUrls creates a Collage PNG Image from internet image urls (PNG or JPEG).
+// FromUrls creates a Collage PNG Image from internet image urls (PNG or JPEG).
 // imageUrls		: a slice with all image URLs. Empty strings will create an empty space in the collage.
 // descriptions		: a slice with text that will be written on each tile. Can be empty.
 // width			: the width of the result collage image.
@@ -19,7 +19,7 @@ import (
 // tileWidth		: the width of each tile image.
 // tileHeight		: the height of each tile image.
 // backgroundColour	: the background colour as a hex string.
-func CollageFromUrls(imageUrls, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
+func FromUrls(imageUrls, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
 	imageDataArray := make([][]byte, 0)
 	// download images
 	for _, imageURL := range imageUrls {
@@ -36,10 +36,10 @@ func CollageFromUrls(imageUrls, descriptions []string, width, height, tileWidth,
 		}
 	}
 
-	return CollageFromBytes(imageDataArray, descriptions, width, height, tileWidth, tileHeight, backgroundColour)
+	return FromBytes(imageDataArray, descriptions, width, height, tileWidth, tileHeight, backgroundColour)
 }
 
-// CollageFromBytes creates a Collage PNG Image from image []byte (PNG or JPEG).
+// FromBytes creates a Collage PNG Image from image []byte (PNG or JPEG).
 // imageDataArray   : a slice of all image []byte data
 // descriptions		: a slice with text that will be written on each tile. Can be empty.
 // width			: the width of the result collage image.
@@ -47,7 +47,7 @@ func CollageFromUrls(imageUrls, descriptions []string, width, height, tileWidth,
 // tileWidth		: the width of each tile image.
 // tileHeight		: the height of each tile image.
 // backgroundColour	: the background colour as a hex string.
-func CollageFromBytes(imageDataArray [][]byte, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
+func FromBytes(imageDataArray [][]byte, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
 
 	// create surface with given background colour
 	backgroundColourRGB, _ := colorful.Hex(backgroundColour)
