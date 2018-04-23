@@ -7,11 +7,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Seklfreak/logrus-prefixed-formatter"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/project-d-collab/dhelpers/cache"
 	"gitlab.com/project-d-collab/discordrus"
+	"gitlab.com/project-d-collab/logrus-prefixed-formatter"
 )
 
 // InitLogger initialises and caches the logging server
