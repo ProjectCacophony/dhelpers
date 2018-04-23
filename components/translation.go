@@ -13,6 +13,7 @@ func InitTranslator(files []string) {
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	for _, file := range files {
+		cache.GetLogger().Infoln("Loaded " + file)
 		bundle.MustLoadMessageFile(file)
 	}
 

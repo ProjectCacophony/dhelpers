@@ -120,3 +120,8 @@ func ToArgv(s string) ([]string, error) {
 
 	return argv, nil
 }
+
+// EscapeLinkForMarkdown escapes a link to be ready to used in markdown
+func EscapeLinkForMarkdown(input string) (result string) {
+	return strings.Replace(strings.Replace(input, ")", "%29", -1), "(", "%28", -1)
+}

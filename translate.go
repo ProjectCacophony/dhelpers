@@ -1,6 +1,8 @@
 package dhelpers
 
 import (
+	"strings"
+
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gitlab.com/project-d-collab/dhelpers/cache"
 )
@@ -16,6 +18,7 @@ func T(messageID string) (result string) {
 	defer func() {
 		err := recover()
 		if err != nil {
+			cache.GetLogger().WithField("module", "translate").Errorln(err.(error).Error())
 			result = messageID
 		}
 	}()
@@ -24,6 +27,9 @@ func T(messageID string) (result string) {
 		MessageID: messageID,
 	})
 	if err != nil {
+		if !strings.Contains(err.Error(), "not found") { // ignore message not found errors
+			cache.GetLogger().WithField("module", "translate").Errorln(err.(error).Error())
+		}
 		return messageID
 	}
 	return translation
@@ -40,6 +46,7 @@ func Tf(messageID string, fields ...interface{}) (result string) {
 	defer func() {
 		err := recover()
 		if err != nil {
+			cache.GetLogger().WithField("module", "translate").Errorln(err.(error).Error())
 			result = messageID
 		}
 	}()
@@ -57,6 +64,9 @@ func Tf(messageID string, fields ...interface{}) (result string) {
 		TemplateData: data,
 	})
 	if err != nil {
+		if !strings.Contains(err.Error(), "not found") { // ignore message not found errors
+			cache.GetLogger().WithField("module", "translate").Errorln(err.(error).Error())
+		}
 		return messageID
 	}
 	return translation
@@ -73,6 +83,7 @@ func Tfc(messageID string, count int, fields ...interface{}) (result string) {
 	defer func() {
 		err := recover()
 		if err != nil {
+			cache.GetLogger().WithField("module", "translate").Errorln(err.(error).Error())
 			result = messageID
 		}
 	}()
@@ -91,6 +102,9 @@ func Tfc(messageID string, count int, fields ...interface{}) (result string) {
 		PluralCount:  count,
 	})
 	if err != nil {
+		if !strings.Contains(err.Error(), "not found") { // ignore message not found errors
+			cache.GetLogger().WithField("module", "translate").Errorln(err.(error).Error())
+		}
 		return messageID
 	}
 	return translation
