@@ -19,6 +19,4 @@ func InitLastFm() {
 
 	// cache client
 	cache.SetLastfFm(lastFmClient)
-
-	return
 }
