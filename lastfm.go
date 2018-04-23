@@ -21,7 +21,7 @@ const (
 )
 
 const (
-	lastFmTargetImageSize = "large"
+	lastFmTargetImageSize = "extralarge"
 )
 
 // LastfmUserData contains information about an User on LastFM
