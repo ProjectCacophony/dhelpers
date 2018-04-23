@@ -7,6 +7,7 @@ import (
 
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/ungerik/go-cairo"
+	"gitlab.com/project-d-collab/dhelpers"
 	"gitlab.com/project-d-collab/dhelpers/cache"
 )
 
@@ -26,7 +27,7 @@ func CollageFromUrls(imageUrls, descriptions []string, width, height, tileWidth,
 			imageDataArray = append(imageDataArray, nil)
 			continue
 		}
-		imageData, err := NetGet(imageURL)
+		imageData, err := dhelpers.NetGet(imageURL)
 		if err == nil {
 			imageDataArray = append(imageDataArray, imageData)
 		} else {
