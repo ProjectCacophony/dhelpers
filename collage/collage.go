@@ -1,4 +1,4 @@
-package dhelpers
+package collage
 
 import (
 	"bytes"
