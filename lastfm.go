@@ -8,11 +8,12 @@ import (
 	"gitlab.com/project-d-collab/dhelpers/cache"
 )
 
-type lastFmPeriod string
+// LastFmPeriod is a type for periods used for Last.FM requests
+type LastFmPeriod string
 
 // defines possible LastFM periods
 const (
-	LastFmPeriodOverall lastFmPeriod = "overall"
+	LastFmPeriodOverall LastFmPeriod = "overall"
 	LastFmPeriod7day                 = "7day"
 	LastFmPeriod1month               = "1month"
 	LastFmPeriod3month               = "3month"
@@ -163,7 +164,7 @@ func LastFmGetRecentTracks(lastfmUsername string, limit int) (tracksData []Lastf
 }
 
 // LastFmGetTopArtists returns the top artists of an user
-func LastFmGetTopArtists(lastfmUsername string, limit int, period lastFmPeriod) (artistsData []LastfmArtistData, err error) {
+func LastFmGetTopArtists(lastfmUsername string, limit int, period LastFmPeriod) (artistsData []LastfmArtistData, err error) {
 	// request data
 	var lastfmTopArtists lastfm.UserGetTopArtists
 	lastfmTopArtists, err = cache.GetLastFm().User.GetTopArtists(lastfm.P{
@@ -200,7 +201,7 @@ func LastFmGetTopArtists(lastfmUsername string, limit int, period lastFmPeriod) 
 }
 
 // LastFmGetTopTracks returns the top tracks of an user
-func LastFmGetTopTracks(lastfmUsername string, limit int, period lastFmPeriod) (tracksData []LastfmTrackData, err error) {
+func LastFmGetTopTracks(lastfmUsername string, limit int, period LastFmPeriod) (tracksData []LastfmTrackData, err error) {
 	// request data
 	var lastfmTopTracks lastfm.UserGetTopTracks
 	lastfmTopTracks, err = cache.GetLastFm().User.GetTopTracks(lastfm.P{
@@ -239,7 +240,7 @@ func LastFmGetTopTracks(lastfmUsername string, limit int, period lastFmPeriod) (
 }
 
 // LastFmGetTopAlbums returns the top albums of an user
-func LastFmGetTopAlbums(lastfmUsername string, limit int, period lastFmPeriod) (albumsData []LastfmAlbumData, err error) {
+func LastFmGetTopAlbums(lastfmUsername string, limit int, period LastFmPeriod) (albumsData []LastfmAlbumData, err error) {
 	// request data
 	var lastfmTopAlbums lastfm.UserGetTopAlbums
 	lastfmTopAlbums, err = cache.GetLastFm().User.GetTopAlbums(lastfm.P{
@@ -278,20 +279,28 @@ func LastFmGetTopAlbums(lastfmUsername string, limit int, period lastFmPeriod) (
 }
 
 // LastFmGetPeriodFromArgs parses args to figure out the correct period
-func LastFmGetPeriodFromArgs(args []string) (period lastFmPeriod) { // nolint: golint
-	for _, arg := range args {
+func LastFmGetPeriodFromArgs(args []string) (period LastFmPeriod, newArgs []string) {
+	for i, arg := range args {
 		switch arg {
 		case "7day", "7days", "week", "7", "seven":
-			return LastFmPeriod7day
+			newArgs = append(args[:i], args[i+1:]...)
+			return LastFmPeriod7day, newArgs
 		case "1month", "month", "1", "one":
-			return LastFmPeriod1month
+			newArgs = append(args[:i], args[i+1:]...)
+			return LastFmPeriod1month, newArgs
 		case "3month", "threemonths", "quarter", "3", "three":
-			return LastFmPeriod3month
+			newArgs = append(args[:i], args[i+1:]...)
+			return LastFmPeriod3month, newArgs
 		case "6month", "halfyear", "half", "sixmonths", "6", "six":
-			return LastFmPeriod6month
+			newArgs = append(args[:i], args[i+1:]...)
+			return LastFmPeriod6month, newArgs
 		case "12month", "year", "twelvemonths", "12", "twelve":
-			return LastFmPeriod12month
+			newArgs = append(args[:i], args[i+1:]...)
+			return LastFmPeriod12month, newArgs
+		case "overall", "all", "alltime", "all-time": // nolint: misspell
+			newArgs = append(args[:i], args[i+1:]...)
+			return LastFmPeriodOverall, newArgs
 		}
 	}
-	return LastFmPeriodOverall
+	return LastFmPeriodOverall, args
 }
