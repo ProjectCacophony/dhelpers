@@ -110,13 +110,24 @@ func AllUserIDs() (userIDs []string, err error) {
 
 // GuildUserIDs returns a list of all User IDs in a specific Guild from the shared state
 func GuildUserIDs(guildID string) (userIDs []string, err error) {
-	return readStateSet(guildUserIdsSetKey(guildUserIdsSetKey(guildID)))
+	return readStateSet(guildUserIdsSetKey(guildID))
 }
 
 // IsMember true if the User is a member of the specified Guild
 func IsMember(guildID, userID string) (isMember bool, err error) {
 	isMember, err = cache.GetRedisClient().SIsMember(guildUserIdsSetKey(guildID), userID).Result()
 	return isMember, err
+}
+
+func BotIDForGuild(guildID string) (botID string, err error) {
+	botIDs, err := readStateSet(guildBotIDsSetKey(guildID))
+	if err != nil {
+		return "", err
+	}
+	if len(botIDs) > 0 {
+		return botIDs[0], nil
+	}
+	return "", ErrStateNotFound
 }
 
 // UserChannelPermissions returns the permission of a user in a channel

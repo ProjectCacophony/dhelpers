@@ -4,7 +4,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func onReady(_ *discordgo.Session, ready *discordgo.Ready) (err error) {
+func onReady(ready *discordgo.Ready) (err error) {
 	//fmt.Println("running onReady")
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -22,6 +22,10 @@ func onReady(_ *discordgo.Session, ready *discordgo.Ready) (err error) {
 			return err
 		}
 		err = addToStateSet(allGuildIdsSetKey(), guild.ID)
+		if err != nil {
+			return err
+		}
+		err = addToStateSet(guildBotIDsSetKey(guild.ID), ready.User.ID)
 		if err != nil {
 			return err
 		}
@@ -66,7 +70,7 @@ func onReady(_ *discordgo.Session, ready *discordgo.Ready) (err error) {
 	return nil
 }
 
-func guildAdd(guild *discordgo.Guild) (err error) {
+func guildAdd(session *discordgo.Session, guild *discordgo.Guild) (err error) {
 	//fmt.Println("running guildAdd", guild.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -128,10 +132,14 @@ func guildAdd(guild *discordgo.Guild) (err error) {
 		return err
 	}
 	err = addToStateSet(allGuildIdsSetKey(), guild.ID)
+	err = addToStateSet(guildBotIDsSetKey(guild.ID), session.State.User.ID)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
-func guildRemove(guild *discordgo.Guild) (err error) {
+func guildRemove(session *discordgo.Session, guild *discordgo.Guild) (err error) {
 	//fmt.Println("running guildRemove", guild.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -142,6 +150,10 @@ func guildRemove(guild *discordgo.Guild) (err error) {
 		return err
 	}
 	err = removeFromStateSet(allGuildIdsSetKey(), guild.ID)
+	err = removeFromStateSet(guildBotIDsSetKey(guild.ID), session.State.User.ID)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
@@ -491,16 +503,16 @@ func presenceAdd(guildID string, presence *discordgo.Presence) (err error) {
 func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 	ready, ok := i.(*discordgo.Ready)
 	if ok {
-		return onReady(session, ready)
+		return onReady(ready)
 	}
 
 	switch t := i.(type) {
 	case *discordgo.GuildCreate:
-		return guildAdd(t.Guild)
+		return guildAdd(session, t.Guild)
 	case *discordgo.GuildUpdate:
-		return guildAdd(t.Guild)
+		return guildAdd(session, t.Guild)
 	case *discordgo.GuildDelete:
-		return guildRemove(t.Guild)
+		return guildRemove(session, t.Guild)
 	case *discordgo.GuildMemberAdd:
 		return memberAdd(t.Member)
 	case *discordgo.GuildMemberUpdate:

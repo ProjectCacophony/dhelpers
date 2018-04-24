@@ -25,6 +25,10 @@ func allGuildIdsSetKey() string {
 	return "project-d:state:guild-ids"
 }
 
+func guildBotIDsSetKey(guildID string) string {
+	return "project-d:state:guild-" + guildID + ":bot-ids"
+}
+
 func userKey(userID string) string {
 	return "project-d:state:user-" + userID
 }
