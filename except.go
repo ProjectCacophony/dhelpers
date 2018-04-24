@@ -65,9 +65,9 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 				raven.CaptureError(fmt.Errorf(spew.Sdump(err)), data)
 			}
 		case DiscordErrorHandler:
-			if msg != nil && cache.GetDiscord() != nil {
+			if event != nil && msg != nil && cache.GetEDiscord(event.BotUserID) != nil {
 				// send message to discord, or add reaction if no message permission
-				channelPermissions, chErr := cache.GetDiscord().UserChannelPermissions(event.BotUserID, msg.ChannelID)
+				channelPermissions, chErr := cache.GetEDiscord(event.BotUserID).UserChannelPermissions(event.BotUserID, msg.ChannelID)
 				if chErr == nil {
 					if channelPermissions&discordgo.PermissionSendMessages == discordgo.PermissionSendMessages {
 						errorMessage := err.Error()
@@ -79,7 +79,7 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 						if !dontLog {
 							message += "I sent our top people to fix the issue as soon as possible. <a:ablobreach:437572330026434560>"
 						}
-						SendMessage( // nolint: errcheck
+						event.SendMessage( // nolint: errcheck
 							msg.ChannelID,
 							message,
 						)
@@ -94,7 +94,7 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 							"a:ablobunamused:393869335573037057",
 						}
 						rand.Seed(time.Now().Unix())
-						cache.GetDiscord().MessageReactionAdd(msg.ChannelID, msg.ID, reactions[rand.Intn(len(reactions))]) // nolint: errcheck
+						cache.GetEDiscord(event.BotUserID).MessageReactionAdd(msg.ChannelID, msg.ID, reactions[rand.Intn(len(reactions))]) // nolint: errcheck
 					}
 				}
 			}

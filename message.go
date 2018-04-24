@@ -10,19 +10,24 @@ import (
 )
 
 // SendMessage sends a message to a specific channel, takes care of splitting and sanitising the content
-func SendMessage(channelID, content string) (messages []*discordgo.Message, err error) {
+func (event EventContainer) SendMessage(channelID, content string) (messages []*discordgo.Message, err error) {
+	return SendMessageWithBot(event.BotUserID, channelID, content)
+}
+
+// SendMessageWithBot sends a message to a specific channel, takes care of splitting and sanitising the content
+func SendMessageWithBot(botID, channelID, content string) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	content = cleanDiscordContent(T(content))
 	if len(content) > 2000 {
 		for _, page := range autoPagify(content) {
-			message, err = cache.GetDiscord().ChannelMessageSend(channelID, page)
+			message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, page)
 			if err != nil {
 				return messages, err
 			}
 			messages = append(messages, message)
 		}
 	} else {
-		message, err = cache.GetDiscord().ChannelMessageSend(channelID, content)
+		message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, content)
 		if err != nil {
 			return messages, err
 		}
@@ -32,19 +37,24 @@ func SendMessage(channelID, content string) (messages []*discordgo.Message, err 
 }
 
 // SendMessagef sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields
-func SendMessagef(channelID, content string, fields ...interface{}) (messages []*discordgo.Message, err error) {
+func (event EventContainer) SendMessagef(channelID, content string, fields ...interface{}) (messages []*discordgo.Message, err error) {
+	return SendMessagefWithBot(event.BotUserID, channelID, content, fields...)
+}
+
+// SendMessagefWithBot sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields
+func SendMessagefWithBot(botID, channelID, content string, fields ...interface{}) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	content = cleanDiscordContent(Tf(content, fields...))
 	if len(content) > 2000 {
 		for _, page := range autoPagify(content) {
-			message, err = cache.GetDiscord().ChannelMessageSend(channelID, page)
+			message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, page)
 			if err != nil {
 				return messages, err
 			}
 			messages = append(messages, message)
 		}
 	} else {
-		message, err = cache.GetDiscord().ChannelMessageSend(channelID, content)
+		message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, content)
 		if err != nil {
 			return messages, err
 		}
@@ -54,19 +64,24 @@ func SendMessagef(channelID, content string, fields ...interface{}) (messages []
 }
 
 // SendMessagefc sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields, and applying pluralization
-func SendMessagefc(channelID, content string, count int, fields ...interface{}) (messages []*discordgo.Message, err error) {
+func (event EventContainer) SendMessagefc(channelID, content string, count int, fields ...interface{}) (messages []*discordgo.Message, err error) {
+	return SendMessagefcWithBot(event.BotUserID, channelID, content, count, fields...)
+}
+
+// SendMessagefcWithBot sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields, and applying pluralization
+func SendMessagefcWithBot(botID, channelID, content string, count int, fields ...interface{}) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	content = cleanDiscordContent(Tfc(content, count, fields...))
 	if len(content) > 2000 {
 		for _, page := range autoPagify(content) {
-			message, err = cache.GetDiscord().ChannelMessageSend(channelID, page)
+			message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, page)
 			if err != nil {
 				return messages, err
 			}
 			messages = append(messages, message)
 		}
 	} else {
-		message, err = cache.GetDiscord().ChannelMessageSend(channelID, content)
+		message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, content)
 		if err != nil {
 			return messages, err
 		}
@@ -76,11 +91,16 @@ func SendMessagefc(channelID, content string, count int, fields ...interface{}) 
 }
 
 // SendMessageBoxed sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content
-func SendMessageBoxed(channelID, content string) (messages []*discordgo.Message, err error) {
+func (event EventContainer) SendMessageBoxed(channelID, content string) (messages []*discordgo.Message, err error) {
+	return SendMessageBoxedWithBot(event.BotUserID, channelID, content)
+}
+
+// SendMessageBoxedWithBot sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content
+func SendMessageBoxedWithBot(botID, channelID, content string) (messages []*discordgo.Message, err error) {
 	var newMessages []*discordgo.Message
 	content = cleanDiscordContent(T(content))
 	for _, page := range autoPagify(content) {
-		newMessages, err = SendMessage(channelID, "```"+page+"```")
+		newMessages, err = SendMessageWithBot(botID, channelID, "```"+page+"```")
 		if err != nil {
 			return messages, err
 		}
@@ -90,9 +110,14 @@ func SendMessageBoxed(channelID, content string) (messages []*discordgo.Message,
 }
 
 // SendEmbed sends an embed to a specific channel, takes care of splitting and sanitising the content
-func SendEmbed(channelID string, embed *discordgo.MessageEmbed) (messages []*discordgo.Message, err error) {
+func (event EventContainer) SendEmbed(channelID string, embed *discordgo.MessageEmbed) (messages []*discordgo.Message, err error) {
+	return SendEmbedWithBot(event.BotUserID, channelID, embed)
+}
+
+// SendEmbedWithBot sends an embed to a specific channel, takes care of splitting and sanitising the content
+func SendEmbedWithBot(botID, channelID string, embed *discordgo.MessageEmbed) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
-	message, err = cache.GetDiscord().ChannelMessageSendEmbed(channelID, truncateEmbed(embed))
+	message, err = cache.GetEDiscord(botID).ChannelMessageSendEmbed(channelID, truncateEmbed(embed))
 	if err != nil {
 		return messages, err
 	}
@@ -101,12 +126,22 @@ func SendEmbed(channelID string, embed *discordgo.MessageEmbed) (messages []*dis
 }
 
 // SendFile sends a file to a specific channel, takes care of splitting and sanitising the content
-func SendFile(channelID string, filename string, reader io.Reader, message string) (messages []*discordgo.Message, err error) {
-	return SendComplex(channelID, &discordgo.MessageSend{File: &discordgo.File{Name: filename, Reader: reader}, Content: message})
+func (event EventContainer) SendFile(channelID string, filename string, reader io.Reader, message string) (messages []*discordgo.Message, err error) {
+	return SendFileWithBot(event.BotUserID, channelID, filename, reader, message)
+}
+
+// SendFileWithBot sends a file to a specific channel, takes care of splitting and sanitising the content
+func SendFileWithBot(botID, channelID string, filename string, reader io.Reader, message string) (messages []*discordgo.Message, err error) {
+	return SendComplexWithBot(botID, channelID, &discordgo.MessageSend{File: &discordgo.File{Name: filename, Reader: reader}, Content: message})
 }
 
 // SendComplex sends a discordgo.MessageSend object to a specific channel, takes care of splitting and sanitising the content
-func SendComplex(channelID string, data *discordgo.MessageSend) (messages []*discordgo.Message, err error) {
+func (event EventContainer) SendComplex(channelID string, data *discordgo.MessageSend) (messages []*discordgo.Message, err error) {
+	return SendComplexWithBot(event.BotUserID, channelID, data)
+}
+
+// SendComplexWithBot sends a discordgo.MessageSend object to a specific channel, takes care of splitting and sanitising the content
+func SendComplexWithBot(botID, channelID string, data *discordgo.MessageSend) (messages []*discordgo.Message, err error) {
 	var message *discordgo.Message
 	if data.Embed != nil {
 		data.Embed = truncateEmbed(data.Embed)
@@ -116,10 +151,10 @@ func SendComplex(channelID string, data *discordgo.MessageSend) (messages []*dis
 	if len(pages) > 0 {
 		for i, page := range pages {
 			if i+1 < len(pages) {
-				message, err = cache.GetDiscord().ChannelMessageSend(channelID, page)
+				message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, page)
 			} else {
 				data.Content = page
-				message, err = cache.GetDiscord().ChannelMessageSendComplex(channelID, data)
+				message, err = cache.GetEDiscord(botID).ChannelMessageSendComplex(channelID, data)
 			}
 			if err != nil {
 				return messages, err
@@ -127,7 +162,7 @@ func SendComplex(channelID string, data *discordgo.MessageSend) (messages []*dis
 			messages = append(messages, message)
 		}
 	} else {
-		message, err = cache.GetDiscord().ChannelMessageSendComplex(channelID, data)
+		message, err = cache.GetEDiscord(botID).ChannelMessageSendComplex(channelID, data)
 		if err != nil {
 			return messages, err
 		}
@@ -137,9 +172,14 @@ func SendComplex(channelID string, data *discordgo.MessageSend) (messages []*dis
 }
 
 // EditMessage edits a specific message, takes care of sanitising the content
-func EditMessage(channelID, messageID, content string) (message *discordgo.Message, err error) {
+func (event EventContainer) EditMessage(channelID, messageID, content string) (message *discordgo.Message, err error) {
+	return EditMessageWithBot(event.BotUserID, channelID, messageID, content)
+}
+
+// EditMessageWithBot edits a specific message, takes care of sanitising the content
+func EditMessageWithBot(botID, channelID, messageID, content string) (message *discordgo.Message, err error) {
 	content = cleanDiscordContent(T(content))
-	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
+	message, err = cache.GetEDiscord(botID).ChannelMessageEdit(channelID, messageID, content)
 	if err != nil {
 		return nil, err
 	}
@@ -147,9 +187,14 @@ func EditMessage(channelID, messageID, content string) (message *discordgo.Messa
 }
 
 // EditMessagef edits a specific message, takes care of sanitising the content, and replacing the fields
-func EditMessagef(channelID, messageID, content string, fields ...interface{}) (message *discordgo.Message, err error) {
+func (event EventContainer) EditMessagef(channelID, messageID, content string, fields ...interface{}) (message *discordgo.Message, err error) {
+	return EditMessagefWithBot(event.BotUserID, channelID, messageID, content, fields...)
+}
+
+// EditMessagefWithBot edits a specific message, takes care of sanitising the content, and replacing the fields
+func EditMessagefWithBot(botID, channelID, messageID, content string, fields ...interface{}) (message *discordgo.Message, err error) {
 	content = cleanDiscordContent(Tf(content, fields...))
-	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
+	message, err = cache.GetEDiscord(botID).ChannelMessageEdit(channelID, messageID, content)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +202,14 @@ func EditMessagef(channelID, messageID, content string, fields ...interface{}) (
 }
 
 // EditMessagefc edits a specific message, takes care of sanitising the content, and replacing the fields, and applying pluralization
-func EditMessagefc(channelID, messageID, content string, count int, fields ...interface{}) (message *discordgo.Message, err error) {
+func (event EventContainer) EditMessagefc(channelID, messageID, content string, count int, fields ...interface{}) (message *discordgo.Message, err error) {
+	return EditMessagefcWithBot(event.BotUserID, channelID, messageID, content, count, fields...)
+}
+
+// EditMessagefcWithBot edits a specific message, takes care of sanitising the content, and replacing the fields, and applying pluralization
+func EditMessagefcWithBot(botID, channelID, messageID, content string, count int, fields ...interface{}) (message *discordgo.Message, err error) {
 	content = cleanDiscordContent(Tfc(content, count, fields...))
-	message, err = cache.GetDiscord().ChannelMessageEdit(channelID, messageID, content)
+	message, err = cache.GetEDiscord(botID).ChannelMessageEdit(channelID, messageID, content)
 	if err != nil {
 		return nil, err
 	}
@@ -167,8 +217,13 @@ func EditMessagefc(channelID, messageID, content string, count int, fields ...in
 }
 
 // EditEmbed edits a specific embed, takes care of sanitising the content
-func EditEmbed(channelID, messageID string, embed *discordgo.MessageEmbed) (message *discordgo.Message, err error) {
-	message, err = cache.GetDiscord().ChannelMessageEditEmbed(channelID, messageID, truncateEmbed(embed))
+func (event EventContainer) EditEmbed(channelID, messageID string, embed *discordgo.MessageEmbed) (message *discordgo.Message, err error) {
+	return EditEmbedWithBot(event.BotUserID, channelID, messageID, embed)
+}
+
+// EditEmbedWithBot edits a specific embed, takes care of sanitising the content
+func EditEmbedWithBot(botID, channelID, messageID string, embed *discordgo.MessageEmbed) (message *discordgo.Message, err error) {
+	message, err = cache.GetEDiscord(botID).ChannelMessageEditEmbed(channelID, messageID, truncateEmbed(embed))
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +231,12 @@ func EditEmbed(channelID, messageID string, embed *discordgo.MessageEmbed) (mess
 }
 
 // EditComplex edits a specific message using a discordgo.MessageEdit object, takes care of sanitising the content
-func EditComplex(data *discordgo.MessageEdit) (message *discordgo.Message, err error) {
+func (event EventContainer) EditComplex(data *discordgo.MessageEdit) (message *discordgo.Message, err error) {
+	return EditComplexWithBot(event.BotUserID, data)
+}
+
+// EditComplexWithBot edits a specific message using a discordgo.MessageEdit object, takes care of sanitising the content
+func EditComplexWithBot(botID string, data *discordgo.MessageEdit) (message *discordgo.Message, err error) {
 	if data.Embed != nil {
 		data.Embed = truncateEmbed(data.Embed)
 	}
@@ -184,7 +244,7 @@ func EditComplex(data *discordgo.MessageEdit) (message *discordgo.Message, err e
 		content := cleanDiscordContent(*data.Content)
 		data.Content = &content
 	}
-	message, err = cache.GetDiscord().ChannelMessageEditComplex(data)
+	message, err = cache.GetEDiscord(botID).ChannelMessageEditComplex(data)
 	if err != nil {
 		return nil, err
 	}

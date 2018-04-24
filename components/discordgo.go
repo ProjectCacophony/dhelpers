@@ -11,6 +11,7 @@ import (
 // InitDiscord initializes and caches the discord client
 // reads the discord endpoint from the environment variable DISCORD_ENDPOINT, example: https://discordapp.com/
 // reads the discord bot token from the environment variable DISCORD_BOT_TOKEN
+// this is only to open a gateway connection with a fixed bot token, for everything else cache.GetEDiscord should be used to get a customised session
 func InitDiscord() (err error) {
 	// create a new Discordgo Bot Client
 	dhelpers.SetDiscordEndpoints(os.Getenv("DISCORD_ENDPOINT"))
