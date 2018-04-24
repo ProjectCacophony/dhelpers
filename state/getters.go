@@ -119,6 +119,7 @@ func IsMember(guildID, userID string) (isMember bool, err error) {
 	return isMember, err
 }
 
+// BotIDForGuild returns a Bot User ID for the given Guild ID
 func BotIDForGuild(guildID string) (botID string, err error) {
 	botIDs, err := readStateSet(guildBotIDsSetKey(guildID))
 	if err != nil {

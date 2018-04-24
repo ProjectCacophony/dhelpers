@@ -132,10 +132,10 @@ func guildAdd(session *discordgo.Session, guild *discordgo.Guild) (err error) {
 		return err
 	}
 	err = addToStateSet(allGuildIdsSetKey(), guild.ID)
-	err = addToStateSet(guildBotIDsSetKey(guild.ID), session.State.User.ID)
 	if err != nil {
 		return err
 	}
+	err = addToStateSet(guildBotIDsSetKey(guild.ID), session.State.User.ID)
 	return err
 }
 
@@ -150,10 +150,10 @@ func guildRemove(session *discordgo.Session, guild *discordgo.Guild) (err error)
 		return err
 	}
 	err = removeFromStateSet(allGuildIdsSetKey(), guild.ID)
-	err = removeFromStateSet(guildBotIDsSetKey(guild.ID), session.State.User.ID)
 	if err != nil {
 		return err
 	}
+	err = removeFromStateSet(guildBotIDsSetKey(guild.ID), session.State.User.ID)
 	return err
 }
 
