@@ -48,6 +48,8 @@ type LastfmTrackData struct {
 	Loved          bool
 	NowPlaying     bool
 	Scrobbles      int
+	// used for guild stats
+	Users int
 }
 
 // LastfmArtistData contains information about an Artist on LastFM
@@ -66,6 +68,19 @@ type LastfmAlbumData struct {
 	Artist    string
 	ArtistURL string
 	Scrobbles int
+}
+
+// LastFmGuildTopTracks contains the top tracks for a guild, it is built by the Worker and stored in redis
+type LastFmGuildTopTracks struct {
+	GuildID       string
+	NumberOfUsers int
+	Period        LastFmPeriod
+	Tracks        []LastfmTrackData
+}
+
+// LastFmGuildTopTracksKey returns the redis key for LastFmGuildTopTracks
+func LastFmGuildTopTracksKey(guildID string, period LastFmPeriod) (key string) {
+	return "project-d:lastfm:guild-top-tracks:" + guildID + ":" + string(period)
 }
 
 // LastFmGetUserinfo returns information about a LastFM user

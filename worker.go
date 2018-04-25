@@ -24,6 +24,7 @@ func jobLockKey(jobName string) (key string) {
 }
 
 // JobStart returns true and a locker if the Job has been started successfully, returns false if the Job is already running
+// after timeout the locks unlock itself, use locker.Lock() to renew a lock
 func JobStart(jobName string, timeout time.Duration) (start bool, locker *lock.Locker, err error) {
 	locker = lock.New(cache.GetRedisClient(), jobLockKey(jobName), &lock.Options{
 		LockTimeout: timeout,
