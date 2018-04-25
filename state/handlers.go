@@ -570,6 +570,14 @@ func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 				previousMember.User.Username = t.User.Username
 			}
 
+			if t.User.Discriminator != "" {
+				previousMember.User.Discriminator = t.User.Discriminator
+			}
+
+			if t.User.Avatar != "" {
+				previousMember.User.Avatar = t.User.Avatar
+			}
+
 			// PresenceUpdates always contain a list of roles, so there's no need to check for an empty list here
 			previousMember.Roles = t.Roles
 
