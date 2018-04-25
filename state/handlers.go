@@ -547,9 +547,6 @@ func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 		if err != nil {
 			return err
 		}
-		if t.Status == discordgo.StatusOffline {
-			return nil
-		}
 
 		previousMember, err := Member(t.GuildID, t.User.ID)
 		if err != nil {
