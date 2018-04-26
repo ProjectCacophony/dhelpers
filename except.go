@@ -25,13 +25,16 @@ const (
 
 // HandleErrWith handles an error with the given error handles
 // event can be nil
+// currently supported ErrorHandlerTypes: SentryErrorHandler, and DiscordErrorHandler
 func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, event *EventContainer) {
 	var msg *discordgo.Message
-	if event.MessageCreate != nil {
-		msg = event.MessageCreate.Message
-	}
-	if event.MessageUpdate != nil {
-		msg = event.MessageUpdate.Message
+	if event != nil {
+		if event.MessageCreate != nil {
+			msg = event.MessageCreate.Message
+		}
+		if event.MessageUpdate != nil {
+			msg = event.MessageUpdate.Message
+		}
 	}
 
 	var dontLog bool
@@ -107,6 +110,34 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 		stackSize := runtime.Stack(buf, false)
 
 		cache.GetLogger().Errorln(err.Error() + "\n\n" + string(buf[0:stackSize]))
+	}
+}
+
+// HandleJobError handles a Job error, if errorHandlers is nil it will be sent to sentry
+// currently supported ErrorHandlerTypes: SentryErrorHandler
+func HandlerJobError(service, job string, err error, errorHandlers []ErrorHandlerType) {
+	if errorHandlers == nil {
+		errorHandlers = []ErrorHandlerType{SentryErrorHandler}
+	}
+
+	for _, errorHandlerType := range errorHandlers {
+		switch errorHandlerType {
+		case SentryErrorHandler:
+			if raven.ProjectID() != "" {
+				// send error to sentry
+				data := map[string]string{"service": service, "job": job}
+
+				raven.CaptureError(fmt.Errorf(spew.Sdump(err)), data)
+			}
+		}
+	}
+
+	if cache.GetLogger() != nil {
+		// log stacktrace
+		buf := make([]byte, 1<<16)
+		stackSize := runtime.Stack(buf, false)
+
+		cache.GetLogger().WithField("job", job).Errorln(err.Error() + "\n\n" + string(buf[0:stackSize]))
 	}
 }
 
