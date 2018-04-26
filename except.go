@@ -115,7 +115,7 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 
 // HandleJobError handles a Job error, if errorHandlers is nil it will be sent to sentry
 // currently supported ErrorHandlerTypes: SentryErrorHandler
-func HandlerJobError(service, job string, err error, errorHandlers []ErrorHandlerType) {
+func HandleJobError(service, job string, err error, errorHandlers []ErrorHandlerType) {
 	if errorHandlers == nil {
 		errorHandlers = []ErrorHandlerType{SentryErrorHandler}
 	}

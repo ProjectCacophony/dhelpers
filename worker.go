@@ -36,3 +36,12 @@ func JobStart(jobName string, timeout time.Duration) (start bool, locker *lock.L
 	start, err = locker.LockWithContext(context.Background())
 	return start, locker, err
 }
+
+// JobErrorHandler handles errors at jobs, defer to this: defer JobErrorHandler(jobName)
+func JobErrorHandler(jobName string) {
+	err := recover()
+	if err != nil {
+		// handle errors
+		HandleJobError("Worker", jobName, err.(error), nil)
+	}
+}
