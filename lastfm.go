@@ -141,9 +141,9 @@ func LastFmGetRecentTracks(lastfmUsername string, limit int) (tracksData []Lastf
 			}
 			lastTrack := LastfmTrackData{
 				Name:      track.Name,
-				URL:       EscapeLinkForMarkdown(track.Url),
+				URL:       track.Url,
 				Artist:    track.Artist.Name,
-				ArtistURL: EscapeLinkForMarkdown(track.Artist.Url),
+				ArtistURL: track.Artist.Url,
 				Album:     track.Album.Name,
 				Loved:     false,
 			}
@@ -197,14 +197,14 @@ func LastFmGetTopArtists(lastfmUsername string, limit int, period LastFmPeriod) 
 		for _, artist := range lastfmTopArtists.Artists {
 			lastArtist := LastfmArtistData{
 				Name: artist.Name,
-				URL:  EscapeLinkForMarkdown(artist.Url),
+				URL:  artist.Url,
 			}
 			for _, image := range artist.Images {
 				if image.Size == lastFmTargetImageSize {
 					lastArtist.ImageURL = image.Url
 				}
 			}
-			lastArtist.Scrobbles, _ = strconv.Atoi(artist.PlayCount)
+			lastArtist.Scrobbles, _ = strconv.Atoi(artist.PlayCount) // nolint: gas
 
 			artistsData = append(artistsData, lastArtist)
 			if len(artistsData) >= limit {
@@ -243,7 +243,7 @@ func LastFmGetTopTracks(lastfmUsername string, limit int, period LastFmPeriod) (
 					lastTrack.ImageURL = image.Url
 				}
 			}
-			lastTrack.Scrobbles, _ = strconv.Atoi(track.PlayCount)
+			lastTrack.Scrobbles, _ = strconv.Atoi(track.PlayCount) // nolint: gas
 
 			tracksData = append(tracksData, lastTrack)
 			if len(tracksData) >= limit {
@@ -282,7 +282,7 @@ func LastFmGetTopAlbums(lastfmUsername string, limit int, period LastFmPeriod) (
 					lastAlbum.ImageURL = image.Url
 				}
 			}
-			lastAlbum.Scrobbles, _ = strconv.Atoi(album.PlayCount)
+			lastAlbum.Scrobbles, _ = strconv.Atoi(album.PlayCount) // nolint: gas
 
 			albumsData = append(albumsData, lastAlbum)
 			if len(albumsData) >= limit {
