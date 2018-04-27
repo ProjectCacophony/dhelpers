@@ -100,22 +100,27 @@ func User(userID string) (user *discordgo.User, err error) {
 
 // AllGuildIDs returns a list of all Guild IDs from the shared state
 func AllGuildIDs() (guildIDs []string, err error) {
-	return readStateSet(allGuildIdsSetKey())
+	return readStateSet(allGuildIDsSetKey())
+}
+
+// AllChannelIDs returns a list of all Channel IDs from the shared state
+func AllChannelIDs() (guildIDs []string, err error) {
+	return readStateSet(allChannelIDsSetKey())
 }
 
 // AllUserIDs returns a list of all User IDs from the shared state
 func AllUserIDs() (userIDs []string, err error) {
-	return readStateSet(allUserIdsSetKey())
+	return readStateSet(allUserIDsSetKey())
 }
 
 // GuildUserIDs returns a list of all User IDs in a specific Guild from the shared state
 func GuildUserIDs(guildID string) (userIDs []string, err error) {
-	return readStateSet(guildUserIdsSetKey(guildID))
+	return readStateSet(guildUserIDsSetKey(guildID))
 }
 
 // IsMember true if the User is a member of the specified Guild
 func IsMember(guildID, userID string) (isMember bool, err error) {
-	isMember, err = cache.GetRedisClient().SIsMember(guildUserIdsSetKey(guildID), userID).Result()
+	isMember, err = cache.GetRedisClient().SIsMember(guildUserIDsSetKey(guildID), userID).Result()
 	return isMember, err
 }
 

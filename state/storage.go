@@ -13,16 +13,20 @@ import (
 var stateLock sync.Mutex
 var stateExpire = time.Duration(0)
 
-func guildUserIdsSetKey(guildID string) string {
+func guildUserIDsSetKey(guildID string) string {
 	return "project-d:state:user-ids:" + guildID
 }
 
-func allUserIdsSetKey() string {
+func allUserIDsSetKey() string {
 	return "project-d:state:user-ids"
 }
 
-func allGuildIdsSetKey() string {
+func allGuildIDsSetKey() string {
 	return "project-d:state:guild-ids"
+}
+
+func allChannelIDsSetKey() string {
+	return "project-d:state:channel-ids"
 }
 
 func guildBotIDsSetKey(guildID string) string {

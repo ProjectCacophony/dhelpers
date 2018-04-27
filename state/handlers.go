@@ -21,7 +21,7 @@ func onReady(ready *discordgo.Ready) (err error) {
 		if err != nil {
 			return err
 		}
-		err = addToStateSet(allGuildIdsSetKey(), guild.ID)
+		err = addToStateSet(allGuildIDsSetKey(), guild.ID)
 		if err != nil {
 			return err
 		}
@@ -33,6 +33,10 @@ func onReady(ready *discordgo.Ready) (err error) {
 		// cache guild channels
 		for _, channel := range guild.Channels {
 			err = updateStateObject(channelKey(channel.ID), channel)
+			if err != nil {
+				return err
+			}
+			err = addToStateSet(allChannelIDsSetKey(), channel.ID)
 			if err != nil {
 				return err
 			}
@@ -48,11 +52,11 @@ func onReady(ready *discordgo.Ready) (err error) {
 			if err != nil {
 				return err
 			}
-			err = addToStateSet(allUserIdsSetKey(), member.User.ID)
+			err = addToStateSet(allUserIDsSetKey(), member.User.ID)
 			if err != nil {
 				return err
 			}
-			err = addToStateSet(guildUserIdsSetKey(member.GuildID), member.User.ID)
+			err = addToStateSet(guildUserIDsSetKey(member.GuildID), member.User.ID)
 			if err != nil {
 				return err
 			}
@@ -81,6 +85,10 @@ func guildAdd(session *discordgo.Session, guild *discordgo.Guild) (err error) {
 		if err != nil {
 			return err
 		}
+		err = addToStateSet(allChannelIDsSetKey(), channel.ID)
+		if err != nil {
+			return err
+		}
 	}
 
 	// cache guild members and users
@@ -93,11 +101,11 @@ func guildAdd(session *discordgo.Session, guild *discordgo.Guild) (err error) {
 		if err != nil {
 			return err
 		}
-		err = addToStateSet(allUserIdsSetKey(), member.User.ID)
+		err = addToStateSet(allUserIDsSetKey(), member.User.ID)
 		if err != nil {
 			return err
 		}
-		err = addToStateSet(guildUserIdsSetKey(member.GuildID), member.User.ID)
+		err = addToStateSet(guildUserIDsSetKey(member.GuildID), member.User.ID)
 		if err != nil {
 			return err
 		}
@@ -131,7 +139,7 @@ func guildAdd(session *discordgo.Session, guild *discordgo.Guild) (err error) {
 	if err != nil {
 		return err
 	}
-	err = addToStateSet(allGuildIdsSetKey(), guild.ID)
+	err = addToStateSet(allGuildIDsSetKey(), guild.ID)
 	if err != nil {
 		return err
 	}
@@ -149,11 +157,26 @@ func guildRemove(session *discordgo.Session, guild *discordgo.Guild) (err error)
 	if err != nil {
 		return err
 	}
-	err = removeFromStateSet(allGuildIdsSetKey(), guild.ID)
+	err = removeFromStateSet(allGuildIDsSetKey(), guild.ID)
 	if err != nil {
 		return err
 	}
 	err = removeFromStateSet(guildBotIDsSetKey(guild.ID), session.State.User.ID)
+	if err != nil {
+		return err
+	}
+
+	// remove channels
+	for _, channel := range guild.Channels {
+		err = deleteStateObject(channelKey(channel.ID))
+		if err != nil {
+			return err
+		}
+		err = removeFromStateSet(allChannelIDsSetKey(), channel.ID)
+		if err != nil {
+			return err
+		}
+	}
 	return err
 }
 
@@ -195,11 +218,11 @@ func memberAdd(member *discordgo.Member) (err error) {
 	if err != nil {
 		return err
 	}
-	err = addToStateSet(allUserIdsSetKey(), member.User.ID)
+	err = addToStateSet(allUserIDsSetKey(), member.User.ID)
 	if err != nil {
 		return err
 	}
-	err = addToStateSet(guildUserIdsSetKey(member.GuildID), member.User.ID)
+	err = addToStateSet(guildUserIDsSetKey(member.GuildID), member.User.ID)
 	return err
 }
 
@@ -241,7 +264,7 @@ func memberRemove(member *discordgo.Member) (err error) {
 			if err != nil {
 				return err
 			}
-			err = removeFromStateSet(allUserIdsSetKey(), member.User.ID)
+			err = removeFromStateSet(allUserIDsSetKey(), member.User.ID)
 			if err != nil {
 				return err
 			}
@@ -256,7 +279,7 @@ func memberRemove(member *discordgo.Member) (err error) {
 			break
 		}
 	}
-	err = removeFromStateSet(guildUserIdsSetKey(member.GuildID), member.User.ID)
+	err = removeFromStateSet(guildUserIDsSetKey(member.GuildID), member.User.ID)
 	if err != nil {
 		return err
 	}
@@ -400,6 +423,10 @@ func channelAdd(channel *discordgo.Channel) (err error) {
 
 	// cache channel
 	err = updateStateObject(channelKey(channel.ID), channel)
+	if err != nil {
+		return err
+	}
+	err = addToStateSet(allChannelIDsSetKey(), channel.ID)
 	return err
 }
 
@@ -439,6 +466,10 @@ func channelRemove(channel *discordgo.Channel) (err error) {
 
 	// cache channel
 	err = deleteStateObject(channelKey(channel.ID))
+	if err != nil {
+		return err
+	}
+	err = removeFromStateSet(allChannelIDsSetKey(), channel.ID)
 	return err
 }
 
