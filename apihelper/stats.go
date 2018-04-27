@@ -29,15 +29,21 @@ type ServiceInformation struct {
 	Go         string
 }
 
-// WorkerStatus contains information about a worker
+// WorkerStatus contains information about a Worker
 type WorkerStatus struct {
 	Available bool
 	Entries   []WorkerJobInformation
 	Service   ServiceInformation
 }
 
-// GatewayStatus contains information about a gateway
+// GatewayStatus contains information about a Gateway
 type GatewayStatus struct {
+	Available bool
+	Service   ServiceInformation
+}
+
+// SqsProcessorStatus contains information about a SqsProcessor
+type SqsProcessorStatus struct {
 	Available bool
 	Service   ServiceInformation
 }
@@ -95,6 +101,28 @@ func ReadGatewayStatus() (stats map[string]GatewayStatus) {
 		err = jsoniter.Unmarshal(data, &status)
 		dhelpers.CheckErr(err)
 		stats[gatewayAddress] = status
+	}
+	return stats
+}
+
+// ReadSqsProcessorStatus returns information about all workers
+// the addresses are read from SQSPROCESSOR_ADDRESSES, split using commas
+func ReadSqsProcessorStatus() (stats map[string]SqsProcessorStatus) {
+	stats = make(map[string]SqsProcessorStatus)
+	sqsProcessorAddresses := os.Getenv("SQSPROCESSOR_ADDRESSES")
+	for _, sqsProcessorAddress := range strings.Split(sqsProcessorAddresses, ",") {
+		sqsProcessorAddress = strings.TrimSpace(sqsProcessorAddress)
+		data, err := dhelpers.NetGet(sqsProcessorAddress + "/stats")
+		if err != nil {
+			stats[sqsProcessorAddress] = SqsProcessorStatus{
+				Available: false,
+			}
+			continue
+		}
+		var status SqsProcessorStatus
+		err = jsoniter.Unmarshal(data, &status)
+		dhelpers.CheckErr(err)
+		stats[sqsProcessorAddress] = status
 	}
 	return stats
 }
