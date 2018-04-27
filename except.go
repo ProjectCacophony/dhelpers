@@ -113,6 +113,35 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 	}
 }
 
+// RecoverLog can be recovered to, all errors will be logged
+func RecoverLog() {
+	err := recover()
+	if err != nil {
+		// handle errors
+		LogError(err.(error))
+	}
+}
+
+// LogError sends an error to sentry and logs it, can be nil
+func LogError(err error) {
+	if err == nil {
+		return
+	}
+
+	if cache.GetLogger() != nil {
+		// log stacktrace
+		buf := make([]byte, 1<<16)
+		stackSize := runtime.Stack(buf, false)
+
+		cache.GetLogger().Errorln(err.Error() + "\n\n" + string(buf[0:stackSize]))
+	}
+
+	if raven.ProjectID() != "" {
+		// send error to sentry
+		raven.CaptureError(fmt.Errorf(spew.Sdump(err)), nil)
+	}
+}
+
 // HandleJobError handles a Job error, if errorHandlers is nil it will be sent to sentry
 // currently supported ErrorHandlerTypes: SentryErrorHandler
 func HandleJobError(service, job string, err error, errorHandlers []ErrorHandlerType) {
