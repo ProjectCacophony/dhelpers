@@ -1,6 +1,10 @@
 package dhelpers
 
-import "gitlab.com/project-d-collab/dhelpers/cache"
+import (
+	"time"
+
+	"gitlab.com/project-d-collab/dhelpers/cache"
+)
 
 // GoType starts a goroutine to start a typing indicator in a channel
 func (event EventContainer) GoType(channelID string) {
@@ -11,4 +15,9 @@ func (event EventContainer) GoType(channelID string) {
 
 		cache.GetEDiscord(event.BotUserID).ChannelTyping(channelID) // nolint: errcheck, gas
 	}()
+}
+
+// DiscordTime returns a time formatted to be used in Embeds
+func DiscordTime(theTime time.Time) string {
+	return theTime.Format(time.RFC3339)
 }

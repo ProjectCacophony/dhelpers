@@ -76,6 +76,7 @@ type LastFmGuildTopTracks struct {
 	NumberOfUsers int
 	Period        LastFmPeriod
 	Tracks        []LastfmTrackData
+	CachedAt      time.Time
 }
 
 // LastFmGuildTopTracksKey returns the redis key for LastFmGuildTopTracks
