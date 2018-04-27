@@ -12,11 +12,40 @@ import (
 	"gitlab.com/project-d-collab/dhelpers/metrics"
 )
 
-// WorkerJobInformation contains information about one Job at a owkrer
+// WorkerJobInformation contains information about one Job at a Worker
 type WorkerJobInformation struct {
 	Function string
 	Next     time.Time
 	Prev     time.Time
+}
+
+// GatewayEventInformation contains information about the events received by a Gateway
+type GatewayEventInformation struct {
+	EventsDiscarded                int64
+	EventsGuildCreate              int64
+	EventsGuildUpdate              int64
+	EventsGuildDelete              int64
+	EventsGuildMemberAdd           int64
+	EventsGuildMemberUpdate        int64
+	EventsGuildMemberRemove        int64
+	EventsGuildMembersChunk        int64
+	EventsGuildRoleCreate          int64
+	EventsGuildRoleUpdate          int64
+	EventsGuildRoleDelete          int64
+	EventsGuildEmojisUpdate        int64
+	EventsChannelCreate            int64
+	EventsChannelUpdate            int64
+	EventsChannelDelete            int64
+	EventsMessageCreate            int64
+	EventsMessageUpdate            int64
+	EventsMessageDelete            int64
+	EventsPresenceUpdate           int64
+	EventsChannelPinsUpdate        int64
+	EventsGuildBanAdd              int64
+	EventsGuildBanRemove           int64
+	EventsMessageReactionAdd       int64
+	EventsMessageReactionRemove    int64
+	EventsMessageReactionRemoveAll int64
 }
 
 // ServiceInformation contains general information about a service
@@ -40,6 +69,7 @@ type WorkerStatus struct {
 type GatewayStatus struct {
 	Available bool
 	Service   ServiceInformation
+	Events    GatewayEventInformation
 }
 
 // SqsProcessorStatus contains information about a SqsProcessor
