@@ -2,9 +2,66 @@ package state
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"gitlab.com/project-d-collab/dhelpers/cache"
 )
 
-func onReady(ready *discordgo.Ready) (err error) {
+func initGuildBans(session *discordgo.Session, guildID string) (err error) {
+	// check if bot is allowed to see bans
+	apermissions, err := UserPermissions(session.State.User.ID, guildID)
+	if err != nil {
+		return err
+	}
+	if apermissions&discordgo.PermissionBanMembers != discordgo.PermissionBanMembers {
+		//fmt.Println("resetting bans for", guildID, "because no permissions")
+		// reset ban list if not allowed
+		deleteStateObject(guildBannedUserIDsSetKey(guildID))
+		removeFromStateSet(guildBannedUserIDInitializedGuildIDsSetKey(), guildID)
+		return nil
+	}
+
+	// have we already cached the guild bans for this guild?
+	initializedGuildIDs, err := readStateSet(guildBannedUserIDInitializedGuildIDsSetKey())
+	if err != nil {
+		return err
+	}
+
+	var guildInitialized bool
+	for _, initializedGuildID := range initializedGuildIDs {
+		if initializedGuildID == guildID {
+			guildInitialized = true
+		}
+	}
+
+	if guildInitialized {
+		//fmt.Println("ignoring initializing bans for", guildID, "because already initialized")
+		return
+	}
+
+	// reset guild bans
+	//fmt.Println("resetting bans for", guildID, "because caching new ones")
+	deleteStateObject(guildBannedUserIDsSetKey(guildID))
+
+	// cache new guild bans
+	bans, err := session.GuildBans(guildID)
+	if err != nil {
+		return err
+	}
+
+	newSet := make([]string, 0)
+	for _, ban := range bans {
+		newSet = append(newSet, ban.User.ID)
+	}
+	err = addToStateSet(guildBannedUserIDsSetKey(guildID), newSet...)
+	if err != nil {
+		return err
+	}
+	//fmt.Println("setting bans for", guildID, ":", strings.Join(newSet, ", "))
+
+	err = addToStateSet(guildBannedUserIDInitializedGuildIDsSetKey(), guildID)
+	return err
+}
+
+func onReady(session *discordgo.Session, ready *discordgo.Ready) (err error) {
 	//fmt.Println("running onReady")
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -61,6 +118,14 @@ func onReady(ready *discordgo.Ready) (err error) {
 				return err
 			}
 		}
+
+		// init guild bans (async)
+		go func(gS *discordgo.Session, gGuildID string) {
+			err = initGuildBans(gS, gGuildID)
+			if err != nil {
+				cache.GetLogger().WithField("module", "state").Errorln("error initializing bans for", gGuildID+":", err.Error())
+			}
+		}(session, guild.ID)
 	}
 
 	// cache private channels
@@ -144,7 +209,19 @@ func guildAdd(session *discordgo.Session, guild *discordgo.Guild) (err error) {
 		return err
 	}
 	err = addToStateSet(guildBotIDsSetKey(guild.ID), session.State.User.ID)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// init guild bans (async)
+	go func(gS *discordgo.Session, gGuildID string) {
+		err = initGuildBans(gS, gGuildID)
+		if err != nil {
+			cache.GetLogger().WithField("module", "state").Errorln("error initializing bans for", gGuildID+":", err.Error())
+		}
+	}(session, guild.ID)
+
+	return nil
 }
 
 func guildRemove(session *discordgo.Session, guild *discordgo.Guild) (err error) {
@@ -180,7 +257,7 @@ func guildRemove(session *discordgo.Session, guild *discordgo.Guild) (err error)
 	return err
 }
 
-func memberAdd(member *discordgo.Member) (err error) {
+func memberAdd(session *discordgo.Session, member *discordgo.Member) (err error) {
 	//fmt.Println("running memberAdd", member.GuildID, member.User.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -223,7 +300,21 @@ func memberAdd(member *discordgo.Member) (err error) {
 		return err
 	}
 	err = addToStateSet(guildUserIDsSetKey(member.GuildID), member.User.ID)
-	return err
+	if err != nil {
+		return err
+	}
+
+	if member.User.ID == session.State.User.ID {
+		// init guild bans (async) (could be giving or revoking the bot ban permission)
+		go func(gS *discordgo.Session, gGuildID string) {
+			err = initGuildBans(gS, gGuildID)
+			if err != nil {
+				cache.GetLogger().WithField("module", "state").Errorln("error initializing bans for", gGuildID+":", err.Error())
+			}
+		}(session, member.GuildID)
+	}
+
+	return nil
 }
 
 func memberRemove(member *discordgo.Member) (err error) {
@@ -289,7 +380,7 @@ func memberRemove(member *discordgo.Member) (err error) {
 	return err
 }
 
-func roleAdd(guildID string, role *discordgo.Role) (err error) {
+func roleAdd(session *discordgo.Session, guildID string, role *discordgo.Role) (err error) {
 	//fmt.Println("running roleAdd", guildID, role.ID)
 	stateLock.Lock()
 	defer stateLock.Unlock()
@@ -315,7 +406,22 @@ func roleAdd(guildID string, role *discordgo.Role) (err error) {
 
 	// cache guild
 	err = updateStateObject(guildKey(previousGuild.ID), previousGuild)
-	return err
+	if err != nil {
+		return err
+	}
+
+	if role.Permissions&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator ||
+		role.Permissions&discordgo.PermissionBanMembers == discordgo.PermissionBanMembers {
+		// init guild bans (async) (could be giving or revoking the bot ban permission)
+		go func(gS *discordgo.Session, gGuildID string) {
+			err = initGuildBans(gS, gGuildID)
+			if err != nil {
+				cache.GetLogger().WithField("module", "state").Errorln("error initializing bans for", gGuildID+":", err.Error())
+			}
+		}(session, guildID)
+	}
+
+	return nil
 }
 
 func roleRemove(guildID, roleID string) (err error) {
@@ -530,11 +636,31 @@ func presenceAdd(guildID string, presence *discordgo.Presence) (err error) {
 	return err
 }
 
+func banAdd(session *discordgo.Session, guildID string, user *discordgo.User) (err error) {
+	// check if bot is allowed to see bans
+	apermissions, err := UserPermissions(session.State.User.ID, guildID)
+	if err != nil {
+		return err
+	}
+	if apermissions&discordgo.PermissionBanMembers != discordgo.PermissionBanMembers {
+		return nil
+	}
+
+	// add ban
+	err = addToStateSet(guildBannedUserIDsSetKey(guildID), user.ID)
+	return err
+}
+
+func banRemove(guildID string, user *discordgo.User) (err error) {
+	err = removeFromStateSet(guildBannedUserIDsSetKey(guildID), user.ID)
+	return err
+}
+
 // SharedStateEventHandler receives events from a discordgo Websocket and updates the shared state with them
 func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 	ready, ok := i.(*discordgo.Ready)
 	if ok {
-		return onReady(ready)
+		return onReady(session, ready)
 	}
 
 	switch t := i.(type) {
@@ -545,24 +671,24 @@ func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 	case *discordgo.GuildDelete:
 		return guildRemove(session, t.Guild)
 	case *discordgo.GuildMemberAdd:
-		return memberAdd(t.Member)
+		return memberAdd(session, t.Member)
 	case *discordgo.GuildMemberUpdate:
-		return memberAdd(t.Member)
+		return memberAdd(session, t.Member)
 	case *discordgo.GuildMemberRemove:
 		return memberRemove(t.Member)
 	case *discordgo.GuildMembersChunk:
 		for i := range t.Members {
 			t.Members[i].GuildID = t.GuildID
-			err := memberAdd(t.Members[i])
+			err := memberAdd(session, t.Members[i])
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	case *discordgo.GuildRoleCreate:
-		return roleAdd(t.GuildID, t.Role)
+		return roleAdd(session, t.GuildID, t.Role)
 	case *discordgo.GuildRoleUpdate:
-		return roleAdd(t.GuildID, t.Role)
+		return roleAdd(session, t.GuildID, t.Role)
 	case *discordgo.GuildRoleDelete:
 		return roleRemove(t.GuildID, t.RoleID)
 	case *discordgo.GuildEmojisUpdate:
@@ -573,6 +699,10 @@ func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 		return channelAdd(t.Channel)
 	case *discordgo.ChannelDelete:
 		return channelRemove(t.Channel)
+	case *discordgo.GuildBanAdd:
+		return banAdd(session, t.GuildID, t.User)
+	case *discordgo.GuildBanRemove:
+		return banRemove(t.GuildID, t.User)
 	case *discordgo.PresenceUpdate:
 		err := presenceAdd(t.GuildID, &t.Presence)
 		if err != nil {
@@ -611,7 +741,7 @@ func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 
 		}
 
-		return memberAdd(previousMember)
+		return memberAdd(session, previousMember)
 		/*
 		   case *discordgo.MessageCreate:
 		       if s.MaxMessageCount != 0 {

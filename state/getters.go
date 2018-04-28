@@ -136,6 +136,12 @@ func BotIDForGuild(guildID string) (botID string, err error) {
 	return "", ErrStateNotFound
 }
 
+// GuildBannedUserIDs returns the banned user of a server
+// only contains items if the bot has the Ban Members or Administrator permission
+func GuildBannedUserIDs(guildID string) (userIDs []string, err error) {
+	return readStateSet(guildBannedUserIDsSetKey(guildID))
+}
+
 // UserChannelPermissions returns the permission of a user in a channel
 func UserChannelPermissions(userID, channelID string) (apermissions int, err error) {
 	var channel *discordgo.Channel
@@ -161,12 +167,34 @@ func UserChannelPermissions(userID, channelID string) (apermissions int, err err
 		return
 	}
 
-	return memberPermissions(guild, channel, member), nil
+	return memberChannelPermissions(guild, channel, member), nil
 }
 
-// MemberPermissions calculates the permissions for a member
+// UserPermissions returns the permissions of a user in a guild
+func UserPermissions(userID, guildID string) (apermissions int, err error) {
+	var guild *discordgo.Guild
+	guild, err = Guild(guildID)
+	if err != nil {
+		return
+	}
+
+	if userID == guild.OwnerID {
+		apermissions = discordgo.PermissionAll
+		return
+	}
+
+	var member *discordgo.Member
+	member, err = Member(guild.ID, userID)
+	if err != nil {
+		return
+	}
+
+	return memberPermissions(guild, member), nil
+}
+
+// memberChannelPermissions calculates the permissions for a member in a channel
 // Source: https://github.com/bwmarrin/discordgo/blob/develop/restapi.go#L503
-func memberPermissions(guild *discordgo.Guild, channel *discordgo.Channel, member *discordgo.Member) (apermissions int) {
+func memberChannelPermissions(guild *discordgo.Guild, channel *discordgo.Channel, member *discordgo.Member) (apermissions int) {
 	userID := member.User.ID
 
 	if userID == guild.OwnerID {
@@ -230,6 +258,39 @@ func memberPermissions(guild *discordgo.Guild, channel *discordgo.Channel, membe
 
 	if apermissions&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator {
 		apermissions |= discordgo.PermissionAllChannel
+	}
+
+	return apermissions
+}
+
+// memberPermissions calculates the permissions for a member in a guild
+// Source: https://github.com/bwmarrin/discordgo/blob/develop/restapi.go#L503
+func memberPermissions(guild *discordgo.Guild, member *discordgo.Member) (apermissions int) {
+	userID := member.User.ID
+
+	if userID == guild.OwnerID {
+		apermissions = discordgo.PermissionAll
+		return
+	}
+
+	for _, role := range guild.Roles {
+		if role.ID == guild.ID {
+			apermissions |= role.Permissions
+			break
+		}
+	}
+
+	for _, role := range guild.Roles {
+		for _, roleID := range member.Roles {
+			if role.ID == roleID {
+				apermissions |= role.Permissions
+				break
+			}
+		}
+	}
+
+	if apermissions&discordgo.PermissionAdministrator == discordgo.PermissionAdministrator {
+		apermissions |= discordgo.PermissionAll
 	}
 
 	return apermissions

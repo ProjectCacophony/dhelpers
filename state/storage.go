@@ -33,6 +33,14 @@ func guildBotIDsSetKey(guildID string) string {
 	return "project-d:state:guild-" + guildID + ":bot-ids"
 }
 
+func guildBannedUserIDsSetKey(guildID string) string {
+	return "project-d:state:guild-" + guildID + ":banned-userids"
+}
+
+func guildBannedUserIDInitializedGuildIDsSetKey() string {
+	return "project-d:state:banned-userids-initialized-guild-ids"
+}
+
 func userKey(userID string) string {
 	return "project-d:state:user-" + userID
 }
@@ -71,8 +79,16 @@ func readStateObject(key string) (data []byte, err error) {
 	return data, err
 }
 
-func addToStateSet(key, item string) (err error) {
-	err = cache.GetRedisClient().SAdd(key, item).Err()
+func addToStateSet(key string, items ...string) (err error) {
+	interfaceItems := make([]interface{}, 0)
+	for _, item := range items {
+		interfaceItems = append(interfaceItems, item)
+	}
+	if len(interfaceItems) <= 0 {
+		return
+	}
+
+	err = cache.GetRedisClient().SAdd(key, interfaceItems...).Err()
 	return err
 }
 

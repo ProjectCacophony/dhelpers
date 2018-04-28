@@ -19,11 +19,11 @@ func GetEventKey(i interface{}) (key string) {
 	case *discordgo.GuildDelete:
 		return "project-d:gateway:event-" + string(GuildDeleteEventType) + "-" + GetMD5Hash(fmt.Sprintf("%v", t.Guild))
 	case *discordgo.GuildMemberAdd:
-		return "project-d:gateway:event-" + string(GuildDeleteEventType) + "-" + GetMD5Hash(fmt.Sprintf("%v", t.Member))
+		return "project-d:gateway:event-" + string(GuildMemberAddEventType) + "-" + GetMD5Hash(fmt.Sprintf("%v", t.Member))
 	case *discordgo.GuildMemberUpdate:
-		return "project-d:gateway:event-" + string(GuildDeleteEventType) + "-" + GetMD5Hash(fmt.Sprintf("%v", t.Member))
+		return "project-d:gateway:event-" + string(GuildMemberUpdateEventType) + "-" + GetMD5Hash(fmt.Sprintf("%v", t.Member))
 	case *discordgo.GuildMemberRemove:
-		return "project-d:gateway:event-" + string(GuildDeleteEventType) + "-" + GetMD5Hash(fmt.Sprintf("%v", t.Member))
+		return "project-d:gateway:event-" + string(GuildMemberRemoveEventType) + "-" + GetMD5Hash(fmt.Sprintf("%v", t.Member))
 	case *discordgo.GuildMembersChunk:
 		return "project-d:gateway:event-" + string(GuildMembersChunkEventType) + "-" + GetMD5Hash(fmt.Sprintf("%s %v", t.GuildID, t.Members))
 	case *discordgo.GuildRoleCreate:
