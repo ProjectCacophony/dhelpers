@@ -54,6 +54,10 @@ func channelKey(channelID string) string {
 	return "project-d:state:channel-" + channelID
 }
 
+func messagesListKey(channelID string) string {
+	return "project-d:state:channel-" + channelID + ":messages"
+}
+
 func updateStateObject(key string, object interface{}) error {
 	marshalled, err := jsoniter.Marshal(object)
 	if err != nil {
@@ -99,5 +103,28 @@ func removeFromStateSet(key, item string) (err error) {
 
 func readStateSet(key string) (items []string, err error) {
 	items, err = cache.GetRedisClient().SMembers(key).Result()
+	return items, err
+}
+
+func addToStateList(key string, items ...string) (err error) {
+	interfaceItems := make([]interface{}, 0)
+	for _, item := range items {
+		interfaceItems = append(interfaceItems, item)
+	}
+	if len(interfaceItems) <= 0 {
+		return
+	}
+
+	err = cache.GetRedisClient().LPush(key, interfaceItems...).Err()
+	return err
+}
+
+func trimStateList(key string, limit int64) (err error) {
+	err = cache.GetRedisClient().LTrim(key, 0, limit).Err()
+	return err
+}
+
+func readStateList(key string) (items []string, err error) {
+	items, err = cache.GetRedisClient().LRange(key, 0, -1).Result()
 	return items, err
 }

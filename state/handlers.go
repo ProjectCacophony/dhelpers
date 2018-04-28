@@ -2,7 +2,12 @@ package state
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/json-iterator/go"
 	"gitlab.com/project-d-collab/dhelpers/cache"
+)
+
+var (
+	messagesLimit = 10
 )
 
 func initGuildBans(session *discordgo.Session, guildID string) (err error) {
@@ -14,9 +19,12 @@ func initGuildBans(session *discordgo.Session, guildID string) (err error) {
 	if apermissions&discordgo.PermissionBanMembers != discordgo.PermissionBanMembers {
 		//fmt.Println("resetting bans for", guildID, "because no permissions")
 		// reset ban list if not allowed
-		deleteStateObject(guildBannedUserIDsSetKey(guildID))
-		removeFromStateSet(guildBannedUserIDInitializedGuildIDsSetKey(), guildID)
-		return nil
+		err = deleteStateObject(guildBannedUserIDsSetKey(guildID))
+		if err != nil {
+			return err
+		}
+		err = removeFromStateSet(guildBannedUserIDInitializedGuildIDsSetKey(), guildID)
+		return err
 	}
 
 	// have we already cached the guild bans for this guild?
@@ -39,7 +47,10 @@ func initGuildBans(session *discordgo.Session, guildID string) (err error) {
 
 	// reset guild bans
 	//fmt.Println("resetting bans for", guildID, "because caching new ones")
-	deleteStateObject(guildBannedUserIDsSetKey(guildID))
+	err = deleteStateObject(guildBannedUserIDsSetKey(guildID))
+	if err != nil {
+		return err
+	}
 
 	// cache new guild bans
 	bans, err := session.GuildBans(guildID)
@@ -656,6 +667,23 @@ func banRemove(guildID string, user *discordgo.User) (err error) {
 	return err
 }
 
+func messageCreate(message *discordgo.MessageCreate) (err error) {
+	var marshalled string
+	marshalled, err = jsoniter.MarshalToString(message)
+	if err != nil {
+		return err
+	}
+
+	err = addToStateList(messagesListKey(message.ChannelID), marshalled)
+	//fmt.Println("added", message.Content, "to", messagesListKey(message.ChannelID))
+	if err != nil {
+		return err
+	}
+
+	err = trimStateList(messagesListKey(message.ChannelID), int64(messagesLimit-1))
+	return err
+}
+
 // SharedStateEventHandler receives events from a discordgo Websocket and updates the shared state with them
 func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 	ready, ok := i.(*discordgo.Ready)
@@ -703,6 +731,8 @@ func SharedStateEventHandler(session *discordgo.Session, i interface{}) error {
 		return banAdd(session, t.GuildID, t.User)
 	case *discordgo.GuildBanRemove:
 		return banRemove(t.GuildID, t.User)
+	case *discordgo.MessageCreate:
+		return messageCreate(t)
 	case *discordgo.PresenceUpdate:
 		err := presenceAdd(t.GuildID, &t.Presence)
 		if err != nil {

@@ -192,6 +192,30 @@ func UserPermissions(userID, guildID string) (apermissions int, err error) {
 	return memberPermissions(guild, member), nil
 }
 
+// ChannelMessages returns the messages of a channel
+func ChannelMessages(channelID string) (messages []discordgo.Message, err error) {
+	var messageDatas []string
+	messageDatas, err = readStateList(messagesListKey(channelID))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(messageDatas) <= 0 {
+		return messages, nil
+	}
+
+	var message discordgo.Message
+	for _, messageData := range messageDatas {
+		err = jsoniter.UnmarshalFromString(messageData, &message)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, message)
+	}
+
+	return messages, nil
+}
+
 // memberChannelPermissions calculates the permissions for a member in a channel
 // Source: https://github.com/bwmarrin/discordgo/blob/develop/restapi.go#L503
 func memberChannelPermissions(guild *discordgo.Guild, channel *discordgo.Channel, member *discordgo.Member) (apermissions int) {
