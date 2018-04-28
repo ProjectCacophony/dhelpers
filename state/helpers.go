@@ -16,3 +16,26 @@ func UserFromMention(mention string) (*discordgo.User, error) {
 
 	return nil, errors.New("user not found")
 }
+
+// ChannelFromMention finds a text channel on the same server in an mention, can be direct ID input
+func ChannelFromMention(guildID string, mention string) (*discordgo.Channel, error) {
+	result := regex.ChannelRegex.FindStringSubmatch(mention)
+	if len(result) == 4 {
+		channel, err := Channel(result[2])
+		if err != nil {
+			return nil, err
+		}
+
+		if channel.GuildID != guildID {
+			return nil, errors.New("target channel is on wrong server")
+		}
+
+		if channel.Type != discordgo.ChannelTypeGuildText {
+			return nil, errors.New("target channel has the wrong type")
+		}
+
+		return channel, nil
+	}
+
+	return nil, errors.New("channel not found")
+}
