@@ -9,8 +9,8 @@ import (
 
 // InitMinio sets up and caches the minio client
 // reads the s3 endpoint from S3_ENDPOINT
-// reads the s3 access key from S3_ACCESS_KEY
-// reads the s3 access secret from S3_ACCESS_SECRET
+// reads the s3 access key from AWS_ACCESS_KEY_ID
+// reads the s3 access secret from AWS_SECRET_ACCESS_KEY
 // reads the s3 bucket from S3_BUCKET
 // reads the s3 location from S3_LOCATION
 // reads the s3 cache folder from S3_CACHE_FOLDER
@@ -23,8 +23,8 @@ func InitMinio() (err error) {
 
 	minioClient, err = minio.New(
 		os.Getenv("S3_ENDPOINT"),
-		os.Getenv("S3_ACCESS_KEY"),
-		os.Getenv("S3_ACCESS_SECRET"),
+		os.Getenv("AWS_ACCESS_KEY_ID"),
+		os.Getenv("AWS_SECRET_ACCESS_KEY"),
 		secure,
 	)
 	if err != nil {
