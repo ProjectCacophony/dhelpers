@@ -5,6 +5,8 @@ import (
 
 	"text/template"
 
+	"time"
+
 	"github.com/dustin/go-humanize"
 	"github.com/globalsign/mgo/bson"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -25,10 +27,15 @@ var (
 		"MarkdownLinkEscape": func(text string) string {
 			return EscapeLinkForMarkdown(text)
 		},
-		// HumanizeComma adds commas to large numbers
+		// NumberCommas adds commas to large numbers
 		// example: {{HumanizeComma 1000}} => 1,000
 		"NumberCommas": func(number int) string {
 			return humanize.Comma(int64(number))
+		},
+		// HumanizeTime formats time human readable
+		// example: {{HumanizeTime time.Sub(10*time.Minute)}} => 10 minutes ago
+		"HumanizeTime": func(theTime time.Time) string {
+			return humanize.Time(theTime)
 		},
 	}
 )
