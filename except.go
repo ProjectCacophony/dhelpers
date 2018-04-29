@@ -12,6 +12,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/getsentry/raven-go"
 	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/project-d-collab/dhelpers/state"
 )
 
 // ErrorHandlerType is the Error Handler Type used for the EventContainer
@@ -45,6 +46,12 @@ func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, 
 			errD.Message.Code == discordgo.ErrCodeCannotSendMessagesToThisUser {
 			dontLog = true
 		}
+	}
+	// don't log state errors
+	if err == state.ErrStateNotFound ||
+		err == state.ErrTargetWrongServer ||
+		err == state.ErrTargetWrongType {
+		dontLog = true
 	}
 
 	for _, errorHandlerType := range errorHandlers {

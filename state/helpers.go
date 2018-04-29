@@ -27,15 +27,15 @@ func ChannelFromMention(guildID string, mention string) (*discordgo.Channel, err
 		}
 
 		if channel.GuildID != guildID {
-			return nil, errors.New("target channel is on wrong server")
+			return nil, ErrTargetWrongServer
 		}
 
 		if channel.Type != discordgo.ChannelTypeGuildText {
-			return nil, errors.New("target channel has the wrong type")
+			return nil, ErrTargetWrongType
 		}
 
 		return channel, nil
 	}
 
-	return nil, errors.New("channel not found")
+	return nil, ErrStateNotFound
 }
