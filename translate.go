@@ -12,6 +12,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gitlab.com/project-d-collab/dhelpers/cache"
 	"gitlab.com/project-d-collab/dhelpers/mdb"
+	"gitlab.com/project-d-collab/dhelpers/state"
 )
 
 var (
@@ -36,6 +37,34 @@ var (
 		// example: {{HumanizeTime time.Sub(10*time.Minute)}} => 10 minutes ago
 		"HumanizeTime": func(theTime time.Time) string {
 			return humanize.Time(theTime)
+		},
+		// Prefix returns the prefix for a GuildID
+		// example: {{Prefix 339227598544568340}} => /
+		"Prefix": func(guildID string) string {
+			return GetPrefix(guildID)
+		},
+		// PrefixE returns the prefix for an EventContainer
+		// currently only works with MessageCreate, MessageUpdate, and MessageDelete events
+		// example: {{PrefixE event}} => /
+		"PrefixE": func(event EventContainer) string {
+			switch event.Type {
+			case MessageCreateEventType:
+				channel, err := state.Channel(event.MessageCreate.ChannelID)
+				if err == nil {
+					return GetPrefix(channel.GuildID)
+				}
+			case MessageUpdateEventType:
+				channel, err := state.Channel(event.MessageUpdate.ChannelID)
+				if err == nil {
+					return GetPrefix(channel.GuildID)
+				}
+			case MessageDeleteEventType:
+				channel, err := state.Channel(event.MessageDelete.ChannelID)
+				if err == nil {
+					return GetPrefix(channel.GuildID)
+				}
+			}
+			return defaultPrefix
 		},
 	}
 )

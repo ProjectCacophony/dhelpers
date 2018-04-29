@@ -64,7 +64,7 @@ type DestinationData struct {
 }
 
 // CreateEventContainer creates an EventContainer from a discord event
-func CreateEventContainer(gatewayStartedAt, receivedAt time.Time, session *discordgo.Session, prefixConfig []PrefixRule, eventKey string, i interface{}) (container EventContainer) {
+func CreateEventContainer(gatewayStartedAt, receivedAt time.Time, session *discordgo.Session, eventKey string, i interface{}) (container EventContainer) {
 	// create enhanced Event
 	dDEvent := EventContainer{
 		GatewayStarted: gatewayStartedAt,
@@ -126,7 +126,7 @@ func CreateEventContainer(gatewayStartedAt, receivedAt time.Time, session *disco
 		} else {
 			cache.GetLogger().Errorln("error getting channel #", t.ChannelID+":", err.Error())
 		}
-		prefixes := GetPrefix(prefixConfig, dDEvent.BotUserID, guildID)
+		prefixes := GetAllPrefix(dDEvent.BotUserID, guildID)
 		args, prefix := GetMessageArguments(t.Content, prefixes)
 		dDEvent.Args = args
 		dDEvent.Prefix = prefix
@@ -141,7 +141,7 @@ func CreateEventContainer(gatewayStartedAt, receivedAt time.Time, session *disco
 		} else {
 			cache.GetLogger().Errorln("error getting channel #", t.ChannelID+":", err.Error())
 		}
-		prefixes := GetPrefix(prefixConfig, dDEvent.BotUserID, guildID)
+		prefixes := GetAllPrefix(dDEvent.BotUserID, guildID)
 		args, prefix := GetMessageArguments(t.Content, prefixes)
 		dDEvent.Args = args
 		dDEvent.Prefix = prefix
