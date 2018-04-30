@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/bsm/redis-lock"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // Job defines setting for a job

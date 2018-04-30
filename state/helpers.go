@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/bwmarrin/discordgo"
-	"gitlab.com/project-d-collab/dhelpers/regex"
+	"gitlab.com/Cacophony/dhelpers/regex"
 )
 
 // UserFromMention finds an user in a mention, can be direct ID input

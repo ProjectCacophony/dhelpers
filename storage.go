@@ -18,10 +18,10 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/minio/minio-go"
 	"github.com/satori/go.uuid"
-	"gitlab.com/project-d-collab/dhelpers/cache"
-	"gitlab.com/project-d-collab/dhelpers/mdb"
-	"gitlab.com/project-d-collab/dhelpers/models"
-	"gitlab.com/project-d-collab/dhelpers/state"
+	"gitlab.com/Cacophony/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/mdb"
+	"gitlab.com/Cacophony/dhelpers/models"
+	"gitlab.com/Cacophony/dhelpers/state"
 )
 
 // TODO: watch cache folder size

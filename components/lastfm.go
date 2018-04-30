@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/Seklfreak/lastfm-go/lastfm"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // InitLastFm initializes and caches the lastfm client

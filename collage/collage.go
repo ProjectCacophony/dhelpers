@@ -7,8 +7,8 @@ import (
 
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/ungerik/go-cairo"
-	"gitlab.com/project-d-collab/dhelpers"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // FromUrls creates a Collage PNG Image from internet image urls (PNG or JPEG).

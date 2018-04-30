@@ -9,9 +9,9 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/project-d-collab/dhelpers/cache"
-	"gitlab.com/project-d-collab/discordrus"
-	"gitlab.com/project-d-collab/logrus-prefixed-formatter"
+	"gitlab.com/Cacophony/dhelpers/cache"
+	"gitlab.com/Cacophony/discordrus"
+	"gitlab.com/Cacophony/logrus-prefixed-formatter"
 )
 
 // InitLogger initialises and caches the logging server

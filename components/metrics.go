@@ -3,7 +3,7 @@ package components
 import (
 	"time"
 
-	"gitlab.com/project-d-collab/dhelpers/metrics"
+	"gitlab.com/Cacophony/dhelpers/metrics"
 )
 
 // InitMetrics initializes metrics and sets Uptime

@@ -2,7 +2,7 @@ package components
 
 import (
 	"github.com/aws/aws-sdk-go/service/lambda"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // InitAwsLambda initializes and caches an aws lambda session

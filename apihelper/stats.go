@@ -8,8 +8,8 @@ import (
 	"runtime"
 
 	"github.com/json-iterator/go"
-	"gitlab.com/project-d-collab/dhelpers"
-	"gitlab.com/project-d-collab/dhelpers/metrics"
+	"gitlab.com/Cacophony/dhelpers"
+	"gitlab.com/Cacophony/dhelpers/metrics"
 )
 
 // WorkerJobInformation contains information about one Job at a Worker

@@ -10,9 +10,9 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/globalsign/mgo/bson"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"gitlab.com/project-d-collab/dhelpers/cache"
-	"gitlab.com/project-d-collab/dhelpers/mdb"
-	"gitlab.com/project-d-collab/dhelpers/state"
+	"gitlab.com/Cacophony/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/mdb"
+	"gitlab.com/Cacophony/dhelpers/state"
 )
 
 var (

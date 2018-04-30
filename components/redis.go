@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/go-redis/redis"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // InitRedis initializes and caches the redis client

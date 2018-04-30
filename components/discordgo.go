@@ -4,8 +4,8 @@ import (
 	"os"
 
 	"github.com/bwmarrin/discordgo"
-	"gitlab.com/project-d-collab/dhelpers"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // InitDiscord initializes and caches the discord client

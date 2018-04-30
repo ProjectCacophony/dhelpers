@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"gitlab.com/project-d-collab/dhelpers/cache"
-	"gitlab.com/project-d-collab/dhelpers/state"
+	"gitlab.com/Cacophony/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/state"
 )
 
 // EventContainer is a container for all events sent to Lambdas or the SQS Queue

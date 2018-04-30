@@ -4,7 +4,7 @@ import (
 	"io"
 	"strings"
 
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 
 	"github.com/bwmarrin/discordgo"
 )

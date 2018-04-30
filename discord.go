@@ -3,7 +3,7 @@ package dhelpers
 import (
 	"time"
 
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // GoType starts a goroutine to start a typing indicator in a channel

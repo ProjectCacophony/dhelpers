@@ -2,7 +2,7 @@ package mdb
 
 import (
 	"github.com/globalsign/mgo"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // Collection is the Type used for MongoDB Collections

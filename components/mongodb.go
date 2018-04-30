@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/globalsign/mgo"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 type mgoLogger struct {

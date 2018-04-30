@@ -2,7 +2,7 @@ package components
 
 import (
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // InitAwsSqs initializes and caches an aws sqs session

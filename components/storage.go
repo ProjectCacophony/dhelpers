@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/minio/minio-go"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // InitMinio sets up and caches the minio client

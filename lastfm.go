@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Seklfreak/lastfm-go/lastfm"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 // LastFmPeriod is a type for periods used for Last.FM requests

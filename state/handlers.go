@@ -3,7 +3,7 @@ package state
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/json-iterator/go"
-	"gitlab.com/project-d-collab/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 var (
