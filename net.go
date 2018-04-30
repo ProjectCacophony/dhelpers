@@ -6,11 +6,23 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // TODO: version
 var defaultUA = "ProjectD/0.1 (https://gitlab.com/project-d-collab)"
+
+// CleanURL makes a URL posted in discord ready to use for further usage
+func CleanURL(uncleanedURL string) (url string) {
+	if strings.HasPrefix(uncleanedURL, "<") {
+		uncleanedURL = strings.TrimLeft(uncleanedURL, "<")
+	}
+	if strings.HasSuffix(uncleanedURL, ">") {
+		uncleanedURL = strings.TrimRight(uncleanedURL, ">")
+	}
+	return uncleanedURL
+}
 
 // NetGet does a GET request and returns the result, returns an error if the StatusCode was not 2xx
 func NetGet(url string) ([]byte, error) {

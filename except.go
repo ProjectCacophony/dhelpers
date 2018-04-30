@@ -8,6 +8,9 @@ import (
 	"math/rand"
 	"time"
 
+	"net"
+	"syscall"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/getsentry/raven-go"
@@ -182,4 +185,31 @@ func CheckErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// IsNetworkErr returns true if an error is network related
+func IsNetworkErr(err error) (is bool) {
+	if err == nil {
+		return false
+	}
+
+	if netError, ok := err.(net.Error); ok && netError.Timeout() {
+		return true
+	}
+
+	switch t := err.(type) {
+	case *net.OpError:
+		if t.Op == "dial" {
+			return true
+		} else if t.Op == "read" {
+			return true
+		}
+
+	case syscall.Errno:
+		if t == syscall.ECONNREFUSED {
+			return true
+		}
+	}
+
+	return false
 }
