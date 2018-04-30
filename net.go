@@ -14,9 +14,14 @@ var defaultUA = "ProjectD/0.1 (https://gitlab.com/project-d-collab)"
 
 // NetGet does a GET request and returns the result, returns an error if the StatusCode was not 2xx
 func NetGet(url string) ([]byte, error) {
+	return NetGetTimeout(url, time.Second*15)
+}
+
+// NetGetTimeout does a GET request and returns the result, with a specified timeout, returns an error if the StatusCode was not 2xx
+func NetGetTimeout(url string, timeout time.Duration) ([]byte, error) {
 	// Allocate client
 	client := &http.Client{
-		Timeout: time.Second * 15,
+		Timeout: timeout,
 	}
 
 	// Prepare request
