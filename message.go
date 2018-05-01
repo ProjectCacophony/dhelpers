@@ -9,36 +9,19 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// SendMessage sends a message to a specific channel, takes care of splitting and sanitising the content
+// SendMessage sends a message to a specific channel, takes care of splitting and sanitising the content, the event variable is being set
 func (event EventContainer) SendMessage(channelID, content string) (messages []*discordgo.Message, err error) {
-	return SendMessageWithBot(event.BotUserID, channelID, content)
+	return SendMessagefWithBot(event.BotUserID, channelID, content, "event", event)
 }
 
 // SendMessageWithBot sends a message to a specific channel, takes care of splitting and sanitising the content
 func SendMessageWithBot(botID, channelID, content string) (messages []*discordgo.Message, err error) {
-	var message *discordgo.Message
-	content = cleanDiscordContent(T(content))
-	if len(content) > 2000 {
-		for _, page := range autoPagify(content) {
-			message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, page)
-			if err != nil {
-				return messages, err
-			}
-			messages = append(messages, message)
-		}
-	} else {
-		message, err = cache.GetEDiscord(botID).ChannelMessageSend(channelID, content)
-		if err != nil {
-			return messages, err
-		}
-		messages = append(messages, message)
-	}
-	return messages, nil
+	return SendMessagefWithBot(botID, channelID, content)
 }
 
-// SendMessagef sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields
+// SendMessagef sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields, the event variable is being set
 func (event EventContainer) SendMessagef(channelID, content string, fields ...interface{}) (messages []*discordgo.Message, err error) {
-	return SendMessagefWithBot(event.BotUserID, channelID, content, fields...)
+	return SendMessagefWithBot(event.BotUserID, channelID, content, append(fields, "event", event)...)
 }
 
 // SendMessagefWithBot sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields
@@ -63,9 +46,9 @@ func SendMessagefWithBot(botID, channelID, content string, fields ...interface{}
 	return messages, nil
 }
 
-// SendMessagefc sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields, and applying pluralization
+// SendMessagefc sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields, and applying pluralization, the event variable is being set
 func (event EventContainer) SendMessagefc(channelID, content string, count int, fields ...interface{}) (messages []*discordgo.Message, err error) {
-	return SendMessagefcWithBot(event.BotUserID, channelID, content, count, fields...)
+	return SendMessagefcWithBot(event.BotUserID, channelID, content, count, append(fields, "event", event)...)
 }
 
 // SendMessagefcWithBot sends a message to a specific channel, takes care of splitting and sanitising the content, and replacing the fields, and applying pluralization
@@ -90,15 +73,20 @@ func SendMessagefcWithBot(botID, channelID, content string, count int, fields ..
 	return messages, nil
 }
 
-// SendMessageBoxed sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content
+// SendMessageBoxed sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content, the event variable is being set
 func (event EventContainer) SendMessageBoxed(channelID, content string) (messages []*discordgo.Message, err error) {
-	return SendMessageBoxedWithBot(event.BotUserID, channelID, content)
+	return SendMessageBoxedfWithBot(event.BotUserID, channelID, content, "event", event)
 }
 
 // SendMessageBoxedWithBot sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content
 func SendMessageBoxedWithBot(botID, channelID, content string) (messages []*discordgo.Message, err error) {
+	return SendMessageBoxedfWithBot(botID, channelID, content)
+}
+
+// SendMessageBoxedfWithBot sends a message to a specific channel, will put a box around it, takes care of splitting and sanitising the content, and replacing the fields
+func SendMessageBoxedfWithBot(botID, channelID, content string, fields ...interface{}) (messages []*discordgo.Message, err error) {
 	var newMessages []*discordgo.Message
-	content = cleanDiscordContent(T(content))
+	content = cleanDiscordContent(Tf(content, fields))
 	for _, page := range autoPagify(content) {
 		newMessages, err = SendMessageWithBot(botID, channelID, "```"+page+"```")
 		if err != nil {
@@ -173,22 +161,17 @@ func SendComplexWithBot(botID, channelID string, data *discordgo.MessageSend) (m
 
 // EditMessage edits a specific message, takes care of sanitising the content
 func (event EventContainer) EditMessage(channelID, messageID, content string) (message *discordgo.Message, err error) {
-	return EditMessageWithBot(event.BotUserID, channelID, messageID, content)
+	return EditMessagefWithBot(event.BotUserID, channelID, messageID, content, "event", event)
 }
 
 // EditMessageWithBot edits a specific message, takes care of sanitising the content
 func EditMessageWithBot(botID, channelID, messageID, content string) (message *discordgo.Message, err error) {
-	content = cleanDiscordContent(T(content))
-	message, err = cache.GetEDiscord(botID).ChannelMessageEdit(channelID, messageID, content)
-	if err != nil {
-		return nil, err
-	}
-	return message, err
+	return EditMessagefWithBot(botID, channelID, messageID, content)
 }
 
-// EditMessagef edits a specific message, takes care of sanitising the content, and replacing the fields
+// EditMessagef edits a specific message, takes care of sanitising the content, and replacing the fields, the event variable is being set
 func (event EventContainer) EditMessagef(channelID, messageID, content string, fields ...interface{}) (message *discordgo.Message, err error) {
-	return EditMessagefWithBot(event.BotUserID, channelID, messageID, content, fields...)
+	return EditMessagefWithBot(event.BotUserID, channelID, messageID, content, append(fields, "event", event)...)
 }
 
 // EditMessagefWithBot edits a specific message, takes care of sanitising the content, and replacing the fields
@@ -201,9 +184,9 @@ func EditMessagefWithBot(botID, channelID, messageID, content string, fields ...
 	return message, err
 }
 
-// EditMessagefc edits a specific message, takes care of sanitising the content, and replacing the fields, and applying pluralization
+// EditMessagefc edits a specific message, takes care of sanitising the content, and replacing the fields, and applying pluralization, the event variable is being set
 func (event EventContainer) EditMessagefc(channelID, messageID, content string, count int, fields ...interface{}) (message *discordgo.Message, err error) {
-	return EditMessagefcWithBot(event.BotUserID, channelID, messageID, content, count, fields...)
+	return EditMessagefcWithBot(event.BotUserID, channelID, messageID, content, count, append(fields, "event", event)...)
 }
 
 // EditMessagefcWithBot edits a specific message, takes care of sanitising the content, and replacing the fields, and applying pluralization

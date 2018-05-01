@@ -174,3 +174,21 @@ func Tfc(messageID string, count int, fields ...interface{}) (result string) {
 	}
 	return translation
 }
+
+// T returns the translation for the given message ID, the event variable is being set
+// Example: T("HelloWorld")
+func (event EventContainer) T(messageID string) (result string) {
+	return Tf(messageID, "event", event)
+}
+
+// Tf returns the translation for the given message ID applying the fields, the event variable is being set
+// Example: Tf("HelloWorld", "key", "value")
+func (event EventContainer) Tf(messageID string, fields ...interface{}) (result string) {
+	return Tf(messageID, append(fields, "event", event)...)
+}
+
+// Tfc returns the translation for the given message ID applying the fields and pluralization count, the event variable is being set
+// Example: Tfc("HelloWorld", 3, "key", "value")
+func (event EventContainer) Tfc(messageID string, count int, fields ...interface{}) (result string) {
+	return Tfc(messageID, count, append(fields, "event", event)...)
+}
