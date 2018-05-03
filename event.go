@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"gitlab.com/Cacophony/dhelpers/cache"
-	"gitlab.com/Cacophony/dhelpers/state"
 )
 
 // EventContainer is a container for all events sent to Lambdas or the SQS Queue
@@ -119,14 +117,7 @@ func CreateEventContainer(gatewayStartedAt, receivedAt time.Time, session *disco
 	case *discordgo.MessageCreate:
 		dDEvent.Type = MessageCreateEventType
 		// args and prefix
-		var guildID string
-		channel, err := state.Channel(t.ChannelID)
-		if err == nil {
-			guildID = channel.GuildID
-		} else {
-			cache.GetLogger().Errorln("error getting channel #", t.ChannelID+":", err.Error())
-		}
-		prefixes := GetAllPrefix(dDEvent.BotUserID, guildID)
+		prefixes := GetAllPrefix(dDEvent.BotUserID, t.GuildID)
 		args, prefix := GetMessageArguments(t.Content, prefixes)
 		dDEvent.Args = args
 		dDEvent.Prefix = prefix
@@ -134,14 +125,7 @@ func CreateEventContainer(gatewayStartedAt, receivedAt time.Time, session *disco
 	case *discordgo.MessageUpdate:
 		dDEvent.Type = MessageUpdateEventType
 		// args and prefix
-		var guildID string
-		channel, err := state.Channel(t.ChannelID)
-		if err == nil {
-			guildID = channel.GuildID
-		} else {
-			cache.GetLogger().Errorln("error getting channel #", t.ChannelID+":", err.Error())
-		}
-		prefixes := GetAllPrefix(dDEvent.BotUserID, guildID)
+		prefixes := GetAllPrefix(dDEvent.BotUserID, t.GuildID)
 		args, prefix := GetMessageArguments(t.Content, prefixes)
 		dDEvent.Args = args
 		dDEvent.Prefix = prefix

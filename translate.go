@@ -12,7 +12,6 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gitlab.com/Cacophony/dhelpers/cache"
 	"gitlab.com/Cacophony/dhelpers/mdb"
-	"gitlab.com/Cacophony/dhelpers/state"
 )
 
 var (
@@ -49,20 +48,11 @@ var (
 		"PrefixE": func(event EventContainer) string {
 			switch event.Type {
 			case MessageCreateEventType:
-				channel, err := state.Channel(event.MessageCreate.ChannelID)
-				if err == nil {
-					return GetPrefix(channel.GuildID)
-				}
+				return GetPrefix(event.MessageCreate.GuildID)
 			case MessageUpdateEventType:
-				channel, err := state.Channel(event.MessageUpdate.ChannelID)
-				if err == nil {
-					return GetPrefix(channel.GuildID)
-				}
+				return GetPrefix(event.MessageUpdate.GuildID)
 			case MessageDeleteEventType:
-				channel, err := state.Channel(event.MessageDelete.ChannelID)
-				if err == nil {
-					return GetPrefix(channel.GuildID)
-				}
+				return GetPrefix(event.MessageDelete.GuildID)
 			}
 			return defaultPrefix
 		},
