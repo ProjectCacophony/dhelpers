@@ -13,6 +13,10 @@ before_script:
   - apt-get update
   - apt-get install libcairo2-dev -y
   - go get -v ./...
+  # get discordgo dev branch
+  - cd ${GOPATH}/src/github.com/bwmarrin/discordgo
+  - git checkout develop
+  - cd ${GOPATH}/src/gitlab.com/${CI_PROJECT_NAMESPACE}
   - go get -v golang.org/x/tools/cmd/goimports
   - go get -v gopkg.in/alecthomas/gometalinter.v2
   - gometalinter.v2 --install
