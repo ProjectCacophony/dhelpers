@@ -9,7 +9,7 @@ import (
 
 // InitTranslator initialises and caches a translation bundle
 func InitTranslator(files []string) {
-	bundle := i18n.NewBundle(language.English)
+	bundle := &i18n.Bundle{DefaultLanguage: language.English}
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 
 	for _, file := range files {
