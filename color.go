@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// GetDiscordColorFromHex returns discord color integer from a hex code
-func GetDiscordColorFromHex(hex string) int {
+// HexToDecimal returns a decimal color from a hex color
+func HexToDecimal(hex string) int {
 	colorInt, ok := new(big.Int).SetString(strings.Replace(hex, "#", "", 1), 16)
 	if ok {
 		return int(colorInt.Int64())
@@ -15,7 +15,7 @@ func GetDiscordColorFromHex(hex string) int {
 	return 0x0FADED
 }
 
-// GetHexFromDiscordColor returns hex code from a discord color integer
-func GetHexFromDiscordColor(colour int) (hex string) {
+// DecimalToHex returns a hex color form a decimal color
+func DecimalToHex(colour int) (hex string) {
 	return strings.ToUpper(big.NewInt(int64(colour)).Text(16))
 }

@@ -5,7 +5,6 @@ import (
 
 	"os"
 
-	"github.com/Seklfreak/Robyul2/cache"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -41,7 +40,7 @@ func GetEDiscord(botID string) *discordgo.Session {
 
 	newSession, err := discordgo.New("Bot " + os.Getenv("DISCORD_BOT_TOKEN_"+botID))
 	if err != nil {
-		cache.GetLogger().WithField("module", "cache").Errorln("Error creating discord session for", botID+":", err.Error())
+		GetLogger().WithField("module", "cache").Errorln("Error creating discord session for", botID+":", err.Error())
 		return nil
 	}
 	eventSessions[botID] = newSession

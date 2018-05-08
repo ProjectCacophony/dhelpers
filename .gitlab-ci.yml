@@ -1,5 +1,11 @@
 image: golang:1.10
 
+services:
+  - redis:latest
+
+variables:
+  REDIS_ADDRESS: "redis"
+
 stages:
   - test
 
