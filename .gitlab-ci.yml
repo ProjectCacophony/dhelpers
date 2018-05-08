@@ -4,7 +4,7 @@ services:
   - redis:latest
 
 variables:
-  REDIS_ADDRESS: "localhost:6379"
+  REDIS_ADDRESS: "redis:6379"
 
 stages:
   - test
