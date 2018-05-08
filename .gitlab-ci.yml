@@ -29,6 +29,6 @@ before_script:
 testing:
   stage: test
   script:
-    - diff <(goimports -d .) <(echo -n)
+    - bash format_go.sh
     - go test -v -race $(go list ./... | grep -v /vendor/)
     - gometalinter.v2 --deadline 60m --concurrency=2 --vendor --exclude=^vendor\/ ./...
