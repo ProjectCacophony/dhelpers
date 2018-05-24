@@ -1,6 +1,7 @@
 package dhelpers
 
 import (
+	"context"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -42,6 +43,29 @@ type EventContainer struct {
 	MessageReactionRemoveAll *discordgo.MessageReactionRemoveAll
 	MessageUpdate            *discordgo.MessageUpdate
 	PresenceUpdate           *discordgo.PresenceUpdate
+}
+
+// ContextKey is a type for keys to use in context.Context
+type ContextKey string
+
+const (
+	// ContextKeyEvent is the key for cacophony events used in context.Context
+	ContextKeyEvent ContextKey = "event"
+)
+
+// ContextWithEvent creates a context with a cacophony event item
+func ContextWithEvent(event EventContainer) context.Context {
+	return context.WithValue(context.Background(), ContextKeyEvent, event)
+}
+
+// EventFromContext reads a cacophony event from a context, returns nil if unable to get event
+func EventFromContext(ctx context.Context) *EventContainer {
+	if ctx == nil {
+		return nil
+	}
+
+	event, _ := ctx.Value(ContextKeyEvent).(EventContainer)
+	return &event
 }
 
 // DestinationType is a type for destination types
