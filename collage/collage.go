@@ -5,7 +5,10 @@ import (
 	"image"
 	"strings"
 
+	"context"
+
 	"github.com/lucasb-eyer/go-colorful"
+	"github.com/opentracing/opentracing-go"
 	"github.com/ungerik/go-cairo"
 	"gitlab.com/Cacophony/dhelpers"
 	"gitlab.com/Cacophony/dhelpers/cache"
@@ -19,7 +22,12 @@ import (
 // tileWidth		: the width of each tile image.
 // tileHeight		: the height of each tile image.
 // backgroundColour	: the background colour as a hex string.
-func FromUrls(imageUrls, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
+func FromUrls(ctx context.Context, imageUrls, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
+	// start tracing span
+	var span opentracing.Span
+	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.collage.FromUrls")
+	defer span.Finish()
+
 	imageDataArray := make([][]byte, 0)
 	// download images
 	for _, imageURL := range imageUrls {
@@ -36,7 +44,7 @@ func FromUrls(imageUrls, descriptions []string, width, height, tileWidth, tileHe
 		}
 	}
 
-	return FromBytes(imageDataArray, descriptions, width, height, tileWidth, tileHeight, backgroundColour)
+	return FromBytes(ctx, imageDataArray, descriptions, width, height, tileWidth, tileHeight, backgroundColour)
 }
 
 // FromBytes creates a Collage PNG Image from image []byte (PNG or JPEG).
@@ -47,7 +55,11 @@ func FromUrls(imageUrls, descriptions []string, width, height, tileWidth, tileHe
 // tileWidth		: the width of each tile image.
 // tileHeight		: the height of each tile image.
 // backgroundColour	: the background colour as a hex string.
-func FromBytes(imageDataArray [][]byte, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
+func FromBytes(ctx context.Context, imageDataArray [][]byte, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
+	// start tracing span
+	var span opentracing.Span
+	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.collage.FromBytes")
+	defer span.Finish()
 
 	// create surface with given background colour
 	backgroundColourRGB, _ := colorful.Hex(backgroundColour) // nolint: errcheck, gas

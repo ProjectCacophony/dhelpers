@@ -4,7 +4,10 @@ import (
 	"strconv"
 	"time"
 
+	"context"
+
 	"github.com/Seklfreak/lastfm-go/lastfm"
+	"github.com/opentracing/opentracing-go"
 	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
@@ -85,7 +88,12 @@ func LastFmGuildTopTracksKey(guildID string, period LastFmPeriod) (key string) {
 }
 
 // LastFmGetUserinfo returns information about a LastFM user
-func LastFmGetUserinfo(lastfmUsername string) (userData LastfmUserData, err error) {
+func LastFmGetUserinfo(ctx context.Context, lastfmUsername string) (userData LastfmUserData, err error) {
+	// start tracing span
+	var span opentracing.Span
+	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetUserinfo")
+	defer span.Finish()
+
 	// request data
 	var lastfmUser lastfm.UserGetInfo
 	lastfmUser, err = cache.GetLastFm().User.GetInfo(lastfm.P{"user": lastfmUsername})
@@ -119,7 +127,12 @@ func LastFmGetUserinfo(lastfmUsername string) (userData LastfmUserData, err erro
 }
 
 // LastFmGetRecentTracks returns recent tracks listened to by an user
-func LastFmGetRecentTracks(lastfmUsername string, limit int) (tracksData []LastfmTrackData, err error) {
+func LastFmGetRecentTracks(ctx context.Context, lastfmUsername string, limit int) (tracksData []LastfmTrackData, err error) {
+	// start tracing span
+	var span opentracing.Span
+	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetRecentTracks")
+	defer span.Finish()
+
 	// request data
 	var lastfmRecentTracks lastfm.UserGetRecentTracksExtended
 	lastfmRecentTracks, err = cache.GetLastFm().User.GetRecentTracksExtended(lastfm.P{
@@ -180,7 +193,12 @@ func LastFmGetRecentTracks(lastfmUsername string, limit int) (tracksData []Lastf
 }
 
 // LastFmGetTopArtists returns the top artists of an user
-func LastFmGetTopArtists(lastfmUsername string, limit int, period LastFmPeriod) (artistsData []LastfmArtistData, err error) {
+func LastFmGetTopArtists(ctx context.Context, lastfmUsername string, limit int, period LastFmPeriod) (artistsData []LastfmArtistData, err error) {
+	// start tracing span
+	var span opentracing.Span
+	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopArtists")
+	defer span.Finish()
+
 	// request data
 	var lastfmTopArtists lastfm.UserGetTopArtists
 	lastfmTopArtists, err = cache.GetLastFm().User.GetTopArtists(lastfm.P{
@@ -217,7 +235,12 @@ func LastFmGetTopArtists(lastfmUsername string, limit int, period LastFmPeriod) 
 }
 
 // LastFmGetTopTracks returns the top tracks of an user
-func LastFmGetTopTracks(lastfmUsername string, limit int, period LastFmPeriod) (tracksData []LastfmTrackData, err error) {
+func LastFmGetTopTracks(ctx context.Context, lastfmUsername string, limit int, period LastFmPeriod) (tracksData []LastfmTrackData, err error) {
+	// start tracing span
+	var span opentracing.Span
+	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopTracks")
+	defer span.Finish()
+
 	// request data
 	var lastfmTopTracks lastfm.UserGetTopTracks
 	lastfmTopTracks, err = cache.GetLastFm().User.GetTopTracks(lastfm.P{
@@ -256,7 +279,12 @@ func LastFmGetTopTracks(lastfmUsername string, limit int, period LastFmPeriod) (
 }
 
 // LastFmGetTopAlbums returns the top albums of an user
-func LastFmGetTopAlbums(lastfmUsername string, limit int, period LastFmPeriod) (albumsData []LastfmAlbumData, err error) {
+func LastFmGetTopAlbums(ctx context.Context, lastfmUsername string, limit int, period LastFmPeriod) (albumsData []LastfmAlbumData, err error) {
+	// start tracing span
+	var span opentracing.Span
+	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopAlbums")
+	defer span.Finish()
+
 	// request data
 	var lastfmTopAlbums lastfm.UserGetTopAlbums
 	lastfmTopAlbums, err = cache.GetLastFm().User.GetTopAlbums(lastfm.P{
