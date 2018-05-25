@@ -58,7 +58,7 @@ func FromUrls(ctx context.Context, imageUrls, descriptions []string, width, heig
 func FromBytes(ctx context.Context, imageDataArray [][]byte, descriptions []string, width, height, tileWidth, tileHeight int, backgroundColour string) (collageBytes []byte) {
 	// start tracing span
 	var span opentracing.Span
-	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.collage.FromBytes")
+	span, _ = opentracing.StartSpanFromContext(ctx, "dhelpers.collage.FromBytes")
 	defer span.Finish()
 
 	// create surface with given background colour

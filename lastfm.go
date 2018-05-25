@@ -91,7 +91,7 @@ func LastFmGuildTopTracksKey(guildID string, period LastFmPeriod) (key string) {
 func LastFmGetUserinfo(ctx context.Context, lastfmUsername string) (userData LastfmUserData, err error) {
 	// start tracing span
 	var span opentracing.Span
-	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetUserinfo")
+	span, _ = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetUserinfo")
 	defer span.Finish()
 
 	// request data
@@ -130,7 +130,7 @@ func LastFmGetUserinfo(ctx context.Context, lastfmUsername string) (userData Las
 func LastFmGetRecentTracks(ctx context.Context, lastfmUsername string, limit int) (tracksData []LastfmTrackData, err error) {
 	// start tracing span
 	var span opentracing.Span
-	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetRecentTracks")
+	span, _ = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetRecentTracks")
 	defer span.Finish()
 
 	// request data
@@ -196,7 +196,7 @@ func LastFmGetRecentTracks(ctx context.Context, lastfmUsername string, limit int
 func LastFmGetTopArtists(ctx context.Context, lastfmUsername string, limit int, period LastFmPeriod) (artistsData []LastfmArtistData, err error) {
 	// start tracing span
 	var span opentracing.Span
-	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopArtists")
+	span, _ = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopArtists")
 	defer span.Finish()
 
 	// request data
@@ -238,7 +238,7 @@ func LastFmGetTopArtists(ctx context.Context, lastfmUsername string, limit int, 
 func LastFmGetTopTracks(ctx context.Context, lastfmUsername string, limit int, period LastFmPeriod) (tracksData []LastfmTrackData, err error) {
 	// start tracing span
 	var span opentracing.Span
-	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopTracks")
+	span, _ = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopTracks")
 	defer span.Finish()
 
 	// request data
@@ -282,7 +282,7 @@ func LastFmGetTopTracks(ctx context.Context, lastfmUsername string, limit int, p
 func LastFmGetTopAlbums(ctx context.Context, lastfmUsername string, limit int, period LastFmPeriod) (albumsData []LastfmAlbumData, err error) {
 	// start tracing span
 	var span opentracing.Span
-	span, ctx = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopAlbums")
+	span, _ = opentracing.StartSpanFromContext(ctx, "dhelpers.LastFmGetTopAlbums")
 	defer span.Finish()
 
 	// request data
