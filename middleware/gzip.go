@@ -9,6 +9,8 @@ import (
 	"gitlab.com/Cacophony/dhelpers"
 )
 
+// modified https://gist.github.com/erikdubbelboer/7df2b2b9f34f9f839a84
+
 var (
 	// sync pool for responses
 	pool = sync.Pool{
