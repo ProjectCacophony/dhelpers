@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"gitlab.com/Cacophony/dhelpers"
 )
 
 // Get does a GET request and returns the result, returns an error if the StatusCode was not 2xx
@@ -42,7 +44,10 @@ func GetTimeout(url string, timeout time.Duration) ([]byte, error) {
 
 	// Read body
 	if response.Body != nil {
-		defer response.Body.Close() // nolint: errcheck
+		defer func() {
+			closeBodyErr := response.Body.Close()
+			dhelpers.LogError(closeBodyErr)
+		}()
 	}
 
 	// create bytes buffer
@@ -59,7 +64,10 @@ func GetTimeout(url string, timeout time.Duration) ([]byte, error) {
 		}
 		// close reader
 		if gzipReader != nil {
-			defer gzipReader.Close() // nolint: errcheck
+			defer func() {
+				closeGzipErr := gzipReader.Close()
+				dhelpers.LogError(closeGzipErr)
+			}()
 		}
 		// copy result to buffer
 		_, err = io.Copy(buf, gzipReader)

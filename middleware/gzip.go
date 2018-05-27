@@ -92,9 +92,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 			if gzr.statusCode != http.StatusNotModified && gzr.statusCode != http.StatusNoContent {
 				err := gzr.w.Close()
 				// log any closing errors
-				if err != nil {
-					dhelpers.LogError(err)
-				}
+				dhelpers.LogError(err)
 			}
 			pool.Put(gzr)
 		}()
