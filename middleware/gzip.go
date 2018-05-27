@@ -13,7 +13,7 @@ var (
 	// sync pool for responses
 	pool = sync.Pool{
 		New: func() interface{} {
-			w, _ := gzip.NewWriterLevel(nil, gzip.BestSpeed)
+			w, _ := gzip.NewWriterLevel(nil, gzip.BestSpeed) // nolint: 	gas
 			return &gzipResponseWriter{
 				w: w,
 			}
@@ -61,7 +61,8 @@ func (gzr *gzipResponseWriter) Write(b []byte) (int, error) {
 // Flush flushes any pending compressed data to the writer
 func (gzr *gzipResponseWriter) Flush() {
 	if gzr.w != nil {
-		gzr.w.Flush()
+		err := gzr.w.Flush()
+		dhelpers.LogError(err)
 	}
 
 	if fw, ok := gzr.ResponseWriter.(http.Flusher); ok {
