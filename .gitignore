@@ -78,5 +78,9 @@ $RECYCLE.BIN/
 # vendors
 vendor/
 
+# coverage
+cover.html
+cover.out
+
 ### Repo ###
 gateway

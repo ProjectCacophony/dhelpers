@@ -17,5 +17,9 @@ func HexToDecimal(hex string) int {
 
 // DecimalToHex returns a hex color form a decimal color
 func DecimalToHex(colour int) (hex string) {
+	if colour < 0 {
+		return "FADED"
+	}
+
 	return strings.ToUpper(big.NewInt(int64(colour)).Text(16))
 }

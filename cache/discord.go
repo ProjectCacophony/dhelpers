@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	discord       *discordgo.Session
-	discordMutex  sync.RWMutex
-	eventSessions = make(map[string]*discordgo.Session)
+	discord              *discordgo.Session
+	discordMutex         sync.RWMutex
+	eventSessions        = make(map[string]*discordgo.Session)
+	eventSessionGateways = make(map[string]bool)
 )
 
 // SetDiscord caches a discordgo session for future use
@@ -45,4 +46,29 @@ func GetEDiscord(botID string) *discordgo.Session {
 	}
 	eventSessions[botID] = newSession
 	return newSession
+}
+
+// GetEDiscord gets or create a discord session for an Event, and opens a new gateway for it
+// Should only be used for testing!!! (normally we receive events from the Gateway process)
+// reads the discord bot token from DISCORD_BOT_TOKEN_<bot user id>
+func GetEDiscordGateway(botID string) *discordgo.Session {
+	session := GetEDiscord(botID)
+	if session == nil {
+		return nil
+	}
+
+	discordMutex.Lock()
+	defer discordMutex.Unlock()
+	if _, ok := eventSessionGateways[botID]; ok && eventSessionGateways[botID] {
+		return session
+	}
+
+	err := session.Open()
+	if err != nil {
+		GetLogger().WithField("module", "cache").Errorln("Error opening gateway for", botID+":", err.Error())
+		return nil
+	}
+	eventSessionGateways[botID] = true
+
+	return session
 }
