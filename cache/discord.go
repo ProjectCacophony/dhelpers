@@ -48,7 +48,7 @@ func GetEDiscord(botID string) *discordgo.Session {
 	return newSession
 }
 
-// GetEDiscord gets or create a discord session for an Event, and opens a new gateway for it
+// GetEDiscordGateway gets or create a discord session for an Event, and opens a new gateway for it
 // Should only be used for testing!!! (normally we receive events from the Gateway process)
 // reads the discord bot token from DISCORD_BOT_TOKEN_<bot user id>
 func GetEDiscordGateway(botID string) *discordgo.Session {
