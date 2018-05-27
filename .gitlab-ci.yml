@@ -35,5 +35,6 @@ testing:
   stage: test
   script:
     - bash format_go.sh
-    - go test -v -race $(go list ./... | grep -v /vendor/)
+    - go test -v -race -coverprofile=coverage.txt -covermode=atomic $(go list ./... | grep -v /vendor/)
     - gometalinter.v2 --deadline 60m --concurrency=2 --vendor --exclude=^vendor\/ ./...
+    - bash <(curl -s https://codecov.io/bash) -t uuid-repo-token
