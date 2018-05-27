@@ -10,8 +10,8 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/opentracing/opentracing-go"
 	"github.com/ungerik/go-cairo"
-	"gitlab.com/Cacophony/dhelpers"
 	"gitlab.com/Cacophony/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/net"
 )
 
 // FromUrls creates a Collage PNG Image from internet image urls (PNG or JPEG).
@@ -35,7 +35,7 @@ func FromUrls(ctx context.Context, imageUrls, descriptions []string, width, heig
 			imageDataArray = append(imageDataArray, nil)
 			continue
 		}
-		imageData, err := dhelpers.NetGet(imageURL)
+		imageData, err := net.Get(imageURL)
 		if err == nil {
 			imageDataArray = append(imageDataArray, imageData)
 		} else {

@@ -10,6 +10,7 @@ import (
 	"github.com/json-iterator/go"
 	"gitlab.com/Cacophony/dhelpers"
 	"gitlab.com/Cacophony/dhelpers/metrics"
+	"gitlab.com/Cacophony/dhelpers/net"
 )
 
 // WorkerJobInformation contains information about one Job at a Worker
@@ -98,7 +99,7 @@ func ReadWorkerStatus() (stats map[string]WorkerStatus) {
 	workerAddresses := os.Getenv("WORKER_ADDRESSES")
 	for _, workerAddress := range strings.Split(workerAddresses, ",") {
 		workerAddress = strings.TrimSpace(workerAddress)
-		data, err := dhelpers.NetGet(workerAddress + "/stats")
+		data, err := net.Get(workerAddress + "/stats")
 		if err != nil {
 			stats[workerAddress] = WorkerStatus{
 				Available: false,
@@ -120,7 +121,7 @@ func ReadGatewayStatus() (stats map[string]GatewayStatus) {
 	gatewayAddresses := os.Getenv("GATEWAY_ADDRESSES")
 	for _, gatewayAddress := range strings.Split(gatewayAddresses, ",") {
 		gatewayAddress = strings.TrimSpace(gatewayAddress)
-		data, err := dhelpers.NetGet(gatewayAddress + "/stats")
+		data, err := net.Get(gatewayAddress + "/stats")
 		if err != nil {
 			stats[gatewayAddress] = GatewayStatus{
 				Available: false,
@@ -142,7 +143,7 @@ func ReadSqsProcessorStatus() (stats map[string]SqsProcessorStatus) {
 	sqsProcessorAddresses := os.Getenv("SQSPROCESSOR_ADDRESSES")
 	for _, sqsProcessorAddress := range strings.Split(sqsProcessorAddresses, ",") {
 		sqsProcessorAddress = strings.TrimSpace(sqsProcessorAddress)
-		data, err := dhelpers.NetGet(sqsProcessorAddress + "/stats")
+		data, err := net.Get(sqsProcessorAddress + "/stats")
 		if err != nil {
 			stats[sqsProcessorAddress] = SqsProcessorStatus{
 				Available: false,
