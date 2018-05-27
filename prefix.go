@@ -15,7 +15,7 @@ func GetPrefixes() (prefixRules []PrefixRule) {
 	// TODO: load config from MongoDB
 	return []PrefixRule{ // example prefix config
 		{
-			GuildID: "435420687906111498", // Project D cord
+			GuildID: "435420687906111498", // Cacophony cord
 			Prefix:  []string{"!"},
 		},
 	}

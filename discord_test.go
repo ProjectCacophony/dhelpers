@@ -5,20 +5,25 @@ import (
 
 	"time"
 
+	"os"
+
 	"github.com/bwmarrin/discordgo"
 	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
 func TestGoType(t *testing.T) {
-	channelID := "450311820222136320" // Cacophony / #ci-testing
+	channelID := os.Getenv("TESTING_DISCORD_CHANNELID")
 	event := EventContainer{
-		BotUserID: "435477330195120139", // Cacopohony Sekl Dev
+		BotUserID: os.Getenv("TESTING_DISCORD_BOTID"),
 	}
 
 	received := make(chan bool)
 
 	cache.GetEDiscordGateway(event.BotUserID).AddHandler(func(s *discordgo.Session, m *discordgo.TypingStart) {
 		if m.ChannelID != channelID {
+			return
+		}
+		if m.UserID != event.BotUserID {
 			return
 		}
 

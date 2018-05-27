@@ -1,6 +1,7 @@
 package dhelpers
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -11,14 +12,14 @@ import (
 )
 
 func TestCreateEventContainer(t *testing.T) {
-	botUserID := "435477330195120139" // Cacopohony Sekl Dev
+	botUserID := os.Getenv("TESTING_DISCORD_BOTID")
 
 	now := time.Now()
 	example := EventContainer{
 		ReceivedAt:     now,
 		GatewayStarted: now,
 		Key:            "foo-bar",
-		BotUserID:      "435477330195120139",
+		BotUserID:      os.Getenv("TESTING_DISCORD_BOTID"),
 	}
 	v := CreateEventContainer(now, now, cache.GetEDiscordGateway(botUserID), "foo-bar", nil)
 	if !reflect.DeepEqual(example, v) {
@@ -82,7 +83,7 @@ func TestCreateEventContainer(t *testing.T) {
 	}
 	v = CreateEventContainer(now, now, cache.GetEDiscordGateway(botUserID), "foo-bar", &discordgo.MessageCreate{
 		Message: &discordgo.Message{
-			GuildID: "435420687906111498",
+			GuildID: os.Getenv("TESTING_DISCORD_GUILDID"),
 			Content: "test",
 		},
 	})
@@ -94,7 +95,7 @@ func TestCreateEventContainer(t *testing.T) {
 	}
 	v = CreateEventContainer(now, now, cache.GetEDiscordGateway(botUserID), "foo-bar", &discordgo.MessageCreate{
 		Message: &discordgo.Message{
-			GuildID: "435420687906111498",
+			GuildID: os.Getenv("TESTING_DISCORD_GUILDID"),
 			Content: "!test",
 		},
 	})
@@ -109,7 +110,7 @@ func TestCreateEventContainer(t *testing.T) {
 	}
 	v = CreateEventContainer(now, now, cache.GetEDiscordGateway(botUserID), "foo-bar", &discordgo.MessageUpdate{
 		Message: &discordgo.Message{
-			GuildID: "435420687906111498",
+			GuildID: os.Getenv("TESTING_DISCORD_GUILDID"),
 			Content: "test",
 		},
 	})
