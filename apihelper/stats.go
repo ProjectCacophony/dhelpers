@@ -7,6 +7,8 @@ import (
 
 	"runtime"
 
+	"net/http"
+
 	"github.com/json-iterator/go"
 	"gitlab.com/Cacophony/dhelpers"
 	"gitlab.com/Cacophony/dhelpers/metrics"
@@ -66,6 +68,11 @@ type WorkerStatus struct {
 	Service   ServiceInformation
 }
 
+// Render renders the WorkerStatus for a network response, required to satisfy Chi interface
+func (s WorkerStatus) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
 // GatewayStatus contains information about a Gateway
 type GatewayStatus struct {
 	Available bool
@@ -73,10 +80,20 @@ type GatewayStatus struct {
 	Events    GatewayEventInformation
 }
 
+// Render renders the WorkerStatus for a network response, required to satisfy Chi interface
+func (s GatewayStatus) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+
 // SqsProcessorStatus contains information about a SqsProcessor
 type SqsProcessorStatus struct {
 	Available bool
 	Service   ServiceInformation
+}
+
+// Render renders the WorkerStatus for a network response, required to satisfy Chi interface
+func (s SqsProcessorStatus) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
 
 // GenerateServiceInformation generates general information about a go processor
