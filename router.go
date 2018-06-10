@@ -149,8 +149,8 @@ func GetRoutings() (routingRules []RoutingRule, err error) {
 				newEntry := RoutingRule{
 					Event:           ruleType,
 					Module:          rawRule.Module,
-					DestinationMain: parts[0],
-					DestinationSub:  parts[1],
+					DestinationMain: replaceDestinations(parts[0]),
+					DestinationSub:  replaceDestinations(parts[1]),
 					Always:          rawRule.Always,
 					AllowMyself:     rawRule.AllowMyself,
 					AllowBots:       rawRule.AllowBots,
@@ -378,4 +378,10 @@ func ContainerDestinations(session *discordgo.Session, routingConfig []RoutingRu
 	}
 
 	return
+}
+
+// replaceDestinations reples various placeholders
+// currently supported {ENV} => current environment
+func replaceDestinations(input string) string {
+	return strings.Replace(input, "{ENV}", string(GetEnvironment()), -1)
 }
