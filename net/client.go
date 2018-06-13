@@ -32,6 +32,6 @@ func GetPesterClient(timeout time.Duration, concurrency int, retries int) *peste
 	client.Concurrency = concurrency
 	client.MaxRetries = retries
 	client.Backoff = pester.ExponentialBackoff
-	client.LogHook = posterLogHook
+	client.LogHook = pesterLogHook
 	return client
 }

@@ -14,7 +14,7 @@ import (
 	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
-func posterLogHook(e pester.ErrEntry) {
+func pesterLogHook(e pester.ErrEntry) {
 	cache.GetLogger().WithField("module", "pester").Warnln(
 		"failed", e.Method, e.URL, "(", e.Attempt, " attempt):", e.Err.Error(),
 	)
