@@ -3,12 +3,9 @@ package net
 import (
 	"net/http"
 	"time"
-)
 
-// GetHTTPClient returns a HTTP client with 15 seconds timeout
-func GetHTTPClient() *http.Client {
-	return GetHTTPClientTimeout(time.Second * 15)
-}
+	"github.com/sethgrid/pester"
+)
 
 // GetHTTPClientTimeout returns a HTTP client with a specified timeout
 func GetHTTPClientTimeout(timeout time.Duration) *http.Client {
@@ -27,4 +24,14 @@ func GetHTTPClientTimeoutWithoutKeepAlive(timeout time.Duration) *http.Client {
 		},
 		Timeout: timeout,
 	}
+}
+
+// GetPesterClient returns a Pester client with the specified variables
+func GetPesterClient(timeout time.Duration, concurrency int, retries int) *pester.Client {
+	client := pester.NewExtendedClient(GetHTTPClientTimeout(timeout))
+	client.Concurrency = concurrency
+	client.MaxRetries = retries
+	client.Backoff = pester.ExponentialBackoff
+	client.LogHook = posterLogHook
+	return client
 }
