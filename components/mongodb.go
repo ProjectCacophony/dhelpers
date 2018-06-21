@@ -15,6 +15,10 @@ type mgoLogger struct {
 }
 
 func (mgol mgoLogger) Output(calldepth int, s string) error {
+	if strings.HasPrefix(s, "SYNC ") { // ignore SYNC messages
+		return nil
+	}
+
 	cache.GetLogger().WithField("module", "mongodb").Info(s)
 	return nil
 }
