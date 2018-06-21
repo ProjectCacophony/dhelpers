@@ -63,7 +63,7 @@ func NewLambdaHandler(service string, method func(event EventContainer)) lambdaH
 		defer func() {
 			err := recover()
 			if err != nil {
-				HandleErrWith(service, err.(error), container.Destinations[0].ErrorHandlers, &container)
+				HandleErrWith(service, err.(error), &container, container.Destinations[0].ErrorHandlers...)
 			}
 		}()
 

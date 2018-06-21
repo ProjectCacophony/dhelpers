@@ -11,6 +11,8 @@ import (
 	"net"
 	"syscall"
 
+	"net/http"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/getsentry/raven-go"
@@ -30,7 +32,7 @@ const (
 // HandleErrWith handles an error with the given error handles
 // event can be nil
 // currently supported ErrorHandlerTypes: SentryErrorHandler, and DiscordErrorHandler
-func HandleErrWith(service string, err error, errorHandlers []ErrorHandlerType, event *EventContainer) {
+func HandleErrWith(service string, err error, event *EventContainer, errorHandlers ...ErrorHandlerType) {
 	var msg *discordgo.Message
 	if event != nil {
 		if event.MessageCreate != nil {
@@ -152,9 +154,9 @@ func LogError(err error) {
 	}
 }
 
-// HandleJobError handles a Job error, if errorHandlers is nil it will be sent to sentry
+// HandleJobErrorWith handles a Job error, if errorHandlers is nil it will be sent to sentry
 // currently supported ErrorHandlerTypes: SentryErrorHandler
-func HandleJobError(service, job string, err error, errorHandlers []ErrorHandlerType) {
+func HandleJobErrorWith(service, job string, err error, errorHandlers ...ErrorHandlerType) {
 	if errorHandlers == nil {
 		errorHandlers = []ErrorHandlerType{SentryErrorHandler}
 	}
@@ -177,6 +179,42 @@ func HandleJobError(service, job string, err error, errorHandlers []ErrorHandler
 		stackSize := runtime.Stack(buf, false)
 
 		cache.GetLogger().WithField("job", job).Errorln(err.Error() + "\n\n" + string(buf[0:stackSize]))
+	}
+}
+
+// HandleHTTPErrorWith handles a HTTP error, if errorHandlers is nil it will be sent to sentry
+// currently supported ErrorHandlerTypes: SentryErrorHandler
+func HandleHTTPErrorWith(service string, request *http.Request, err error, errorHandlers ...ErrorHandlerType) {
+	if errorHandlers == nil {
+		errorHandlers = []ErrorHandlerType{SentryErrorHandler}
+	}
+
+	for _, errorHandlerType := range errorHandlers {
+		switch errorHandlerType {
+		case SentryErrorHandler:
+			if raven.ProjectID() != "" {
+				// send error to sentry
+				raven.Capture(
+					raven.NewPacket(
+						err.Error(),
+						raven.NewException(
+							err,
+							raven.NewStacktrace(4, 3, raven.IncludePaths()),
+						),
+						raven.NewHttp(request),
+					),
+					map[string]string{"service": service},
+				)
+			}
+		}
+	}
+
+	if cache.GetLogger() != nil {
+		// log stacktrace
+		buf := make([]byte, 1<<16)
+		stackSize := runtime.Stack(buf, false)
+
+		cache.GetLogger().WithField("module", "http").Errorln(err.Error() + "\n\n" + string(buf[4:stackSize]))
 	}
 }
 

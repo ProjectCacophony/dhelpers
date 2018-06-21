@@ -42,6 +42,6 @@ func JobErrorHandler(jobName string) {
 	err := recover()
 	if err != nil {
 		// handle errors
-		HandleJobError("Worker", jobName, err.(error), nil)
+		HandleJobErrorWith("Worker", jobName, err.(error), SentryErrorHandler)
 	}
 }
