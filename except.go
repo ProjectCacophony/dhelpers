@@ -17,6 +17,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/getsentry/raven-go"
 	"gitlab.com/Cacophony/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/emoji"
 	"gitlab.com/Cacophony/dhelpers/state"
 )
 
@@ -90,9 +91,9 @@ func HandleErrWith(service string, err error, event *EventContainer, errorHandle
 							errorMessage = errD.Message.Message
 						}
 
-						message := "**Something went wrong.** <a:ablobsadcloud:437572939701944322>\n```\nError: " + errorMessage + "\n```"
+						message := "**Something went wrong.** " + emoji.GetWithout("sad") + "\n```\nError: " + errorMessage + "\n```"
 						if !dontLog {
-							message += "I sent our top people to fix the issue as soon as possible. <a:ablobreach:437572330026434560>"
+							message += "I sent our top people to fix the issue as soon as possible. " + emoji.GetWithout("reach")
 						}
 						event.SendMessage( // nolint: errcheck
 							msg.ChannelID,
@@ -100,13 +101,13 @@ func HandleErrWith(service string, err error, event *EventContainer, errorHandle
 						)
 					} else if channelPermissions&discordgo.PermissionAddReactions == discordgo.PermissionAddReactions {
 						reactions := []string{
-							":blobstop:317034621953114112",
-							"a:ablobweary:394026914479865856",
-							":googlespeaknoevil:317036753074651139",
-							":notlikeblob:349342777978519562",
-							"a:ablobcry:393869333740126219",
-							"a:ablobfrown:394026913292615701",
-							"a:ablobunamused:393869335573037057",
+							emoji.GetWithout("stop"),
+							emoji.GetWithout("weary"),
+							emoji.GetWithout("speaknoevil"),
+							emoji.GetWithout("notlikethis"),
+							emoji.GetWithout("cry"),
+							emoji.GetWithout("frown"),
+							emoji.GetWithout("unamused"),
 						}
 						rand.Seed(time.Now().Unix())
 						cache.GetEDiscord(event.BotUserID).MessageReactionAdd(msg.ChannelID, msg.ID, reactions[rand.Intn(len(reactions))]) // nolint: errcheck

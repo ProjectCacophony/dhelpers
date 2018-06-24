@@ -11,6 +11,7 @@ import (
 	"github.com/globalsign/mgo/bson"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gitlab.com/Cacophony/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/emoji"
 	"gitlab.com/Cacophony/dhelpers/mdb"
 )
 
@@ -85,7 +86,8 @@ func T(messageID string) (result string) {
 		}
 		return messageID
 	}
-	return translation
+
+	return emoji.Replace(translation)
 }
 
 // Tf returns the translation for the given message ID applying the fields
@@ -123,7 +125,8 @@ func Tf(messageID string, fields ...interface{}) (result string) {
 		}
 		return messageID
 	}
-	return translation
+
+	return emoji.Replace(translation)
 }
 
 // Tfc returns the translation for the given message ID applying the fields and pluralization count
@@ -162,7 +165,8 @@ func Tfc(messageID string, count int, fields ...interface{}) (result string) {
 		}
 		return messageID
 	}
-	return translation
+
+	return emoji.Replace(translation)
 }
 
 // T returns the translation for the given message ID, the event variable is being set

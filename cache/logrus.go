@@ -25,3 +25,11 @@ func GetLogger() *logrus.Entry {
 
 	return logger
 }
+
+// HasLogger returns true if we have a logger cached
+func HasLogger() bool {
+	loggerMutex.RLock()
+	defer loggerMutex.RUnlock()
+
+	return logger != nil
+}

@@ -15,7 +15,9 @@ type mgoLogger struct {
 }
 
 func (mgol mgoLogger) Output(calldepth int, s string) error {
-	if strings.HasPrefix(s, "SYNC ") { // ignore SYNC messages
+	// ignore verbose log messages
+	if strings.HasPrefix(s, "SYNC ") ||
+		strings.HasPrefix(s, "Ping for ") {
 		return nil
 	}
 

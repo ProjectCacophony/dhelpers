@@ -234,7 +234,7 @@ func EditComplexWithBot(botID string, data *discordgo.MessageEdit) (message *dis
 	return message, err
 }
 
-func pagify(text string, delimiter string) []string {
+func strictPagify(text string, delimiter string) []string {
 	result := make([]string, 0)
 	textParts := strings.Split(text, delimiter)
 	currentOutputPart := ""
@@ -260,19 +260,19 @@ func pagify(text string, delimiter string) []string {
 }
 
 func autoPagify(text string) (pages []string) {
-	for _, page := range pagify(text, "\n") {
+	for _, page := range strictPagify(text, "\n") {
 		if len(page) <= 1992 {
 			pages = append(pages, page)
 		} else {
-			for _, page := range pagify(page, ",") {
+			for _, page := range strictPagify(page, ",") {
 				if len(page) <= 1992 {
 					pages = append(pages, page)
 				} else {
-					for _, page := range pagify(page, "-") {
+					for _, page := range strictPagify(page, "-") {
 						if len(page) <= 1992 {
 							pages = append(pages, page)
 						} else {
-							for _, page := range pagify(page, " ") {
+							for _, page := range strictPagify(page, " ") {
 								if len(page) <= 1992 {
 									pages = append(pages, page)
 								} else {
@@ -288,10 +288,14 @@ func autoPagify(text string) (pages []string) {
 	return pages
 }
 
-func cleanDiscordContent(content string) (output string) {
-	output = strings.Replace(content, "@everyone", "@"+ZeroWidthSpace+"everyone", -1)
-	output = strings.Replace(output, "@here", "@"+ZeroWidthSpace+"here", -1)
-	return output
+func cleanDiscordContent(content string) string {
+	return strings.Replace(
+		strings.Replace(
+			content,
+			"@everyone", "@"+ZeroWidthSpace+"everyone", -1,
+		),
+		"@here", "@"+ZeroWidthSpace+"here", -1,
+	)
 }
 
 // Applies Embed Limits to the given Embed
