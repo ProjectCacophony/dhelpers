@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	colonRegex = regexp.MustCompile(":[A-Za-z]+:")
+	colonRegex = regexp.MustCompile(":[A-Za-z0-9-_]+:")
 )
 
 // Replace replaces all :emoji: in a text with their full ID
