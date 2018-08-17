@@ -49,7 +49,7 @@ func TestBucket_Wait(t *testing.T) {
 		t.Error("expected bucket.Allow() to be true, was false")
 	}
 
-	if time.Now().Sub(start).Seconds() < 0.45 {
+	if time.Since(start).Seconds() < 0.45 {
 		t.Error("expected wait time for third call to be above 0.45 seconds")
 	}
 }

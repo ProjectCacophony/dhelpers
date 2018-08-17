@@ -9,7 +9,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// Bucket is a ratelimit bucket with keys
+// KeyBucket is a ratelimit bucket with keys
 type KeyBucket struct {
 	rate  rate.Limit
 	burst int

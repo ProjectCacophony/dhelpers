@@ -16,6 +16,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/getsentry/raven-go"
+	"gitlab.com/Cacophony/dhelpers/bucket"
 	"gitlab.com/Cacophony/dhelpers/cache"
 	"gitlab.com/Cacophony/dhelpers/emoji"
 	"gitlab.com/Cacophony/dhelpers/state"
@@ -28,6 +29,12 @@ type ErrorHandlerType string
 const (
 	SentryErrorHandler  ErrorHandlerType = "sentry"
 	DiscordErrorHandler                  = "discord"
+)
+
+// defines ratelimiters for the ErrorHandlers
+var (
+	sentryLimiter  = bucket.NewBucket(5)
+	discordLimiter = bucket.NewKeyBucket(3)
 )
 
 // HandleErrWith handles an error with the given error handles
@@ -67,53 +74,72 @@ func HandleErrWith(service string, err error, event *EventContainer, errorHandle
 				continue
 			}
 
-			if raven.ProjectID() != "" {
-				// send error to sentry
-				data := map[string]string{"service": service}
-				if msg != nil {
-					data["MessageID"] = msg.ID
-					data["AuthorID"] = msg.Author.ID
-					data["ChannelID"] = msg.ChannelID
-					data["Content"] = msg.Content
-					data["Timestamp"] = string(msg.Timestamp)
-				}
-
-				raven.CaptureError(fmt.Errorf(spew.Sdump(err)), data)
+			if raven.ProjectID() == "" {
+				continue
 			}
+
+			if !sentryLimiter.Allow() {
+				continue
+			}
+			// send error to sentry
+			data := map[string]string{"service": service}
+			if msg != nil {
+				data["MessageID"] = msg.ID
+				data["AuthorID"] = msg.Author.ID
+				data["ChannelID"] = msg.ChannelID
+				data["Content"] = msg.Content
+				data["Timestamp"] = string(msg.Timestamp)
+			}
+
+			raven.CaptureError(fmt.Errorf(spew.Sdump(err)), data)
+
 		case DiscordErrorHandler:
-			if event != nil && msg != nil && cache.GetEDiscord(event.BotUserID) != nil {
-				// send message to discord, or add reaction if no message permission
-				channelPermissions, chErr := cache.GetEDiscord(event.BotUserID).UserChannelPermissions(event.BotUserID, msg.ChannelID)
-				if chErr == nil {
-					if channelPermissions&discordgo.PermissionSendMessages == discordgo.PermissionSendMessages {
-						errorMessage := err.Error()
-						if errD, ok := err.(*discordgo.RESTError); ok && errD.Message != nil {
-							errorMessage = errD.Message.Message
-						}
-
-						message := "**Something went wrong.** " + emoji.GetWithout("sad") + "\n```\nError: " + errorMessage + "\n```"
-						if !dontLog {
-							message += "I sent our top people to fix the issue as soon as possible. " + emoji.GetWithout("reach")
-						}
-						event.SendMessage( // nolint: errcheck
-							msg.ChannelID,
-							message,
-						)
-					} else if channelPermissions&discordgo.PermissionAddReactions == discordgo.PermissionAddReactions {
-						reactions := []string{
-							emoji.GetWithout("stop"),
-							emoji.GetWithout("weary"),
-							emoji.GetWithout("speaknoevil"),
-							emoji.GetWithout("notlikethis"),
-							emoji.GetWithout("cry"),
-							emoji.GetWithout("frown"),
-							emoji.GetWithout("unamused"),
-						}
-						rand.Seed(time.Now().Unix())
-						cache.GetEDiscord(event.BotUserID).MessageReactionAdd(msg.ChannelID, msg.ID, reactions[rand.Intn(len(reactions))]) // nolint: errcheck
-					}
-				}
+			if event == nil || msg == nil || cache.GetEDiscord(event.BotUserID) == nil {
+				continue
 			}
+
+			if !discordLimiter.Allow(msg.ChannelID) {
+				continue
+			}
+
+			// send message to discord, or add reaction if no message permission
+			channelPermissions, chErr := cache.GetEDiscord(event.BotUserID).UserChannelPermissions(event.BotUserID, msg.ChannelID)
+			if chErr == nil {
+				continue
+			}
+
+			if channelPermissions&discordgo.PermissionSendMessages == discordgo.PermissionSendMessages {
+				// send message if possible
+
+				errorMessage := err.Error()
+				if errD, ok := err.(*discordgo.RESTError); ok && errD.Message != nil {
+					errorMessage = errD.Message.Message
+				}
+
+				message := "**Something went wrong.** " + emoji.GetWithout("sad") + "\n```\nError: " + errorMessage + "\n```"
+				if !dontLog {
+					message += "I sent our top people to fix the issue as soon as possible. " + emoji.GetWithout("reach")
+				}
+				event.SendMessage( // nolint: errcheck
+					msg.ChannelID,
+					message,
+				)
+			} else if channelPermissions&discordgo.PermissionAddReactions == discordgo.PermissionAddReactions {
+				// try falling back to reaction if not possible
+
+				reactions := []string{
+					emoji.GetWithout("stop"),
+					emoji.GetWithout("weary"),
+					emoji.GetWithout("speaknoevil"),
+					emoji.GetWithout("notlikethis"),
+					emoji.GetWithout("cry"),
+					emoji.GetWithout("frown"),
+					emoji.GetWithout("unamused"),
+				}
+				rand.Seed(time.Now().Unix())
+				cache.GetEDiscord(event.BotUserID).MessageReactionAdd(msg.ChannelID, msg.ID, reactions[rand.Intn(len(reactions))]) // nolint: errcheck
+			}
+
 		}
 	}
 
