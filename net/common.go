@@ -10,7 +10,6 @@ import (
 	"net/http"
 
 	"github.com/sethgrid/pester"
-	"gitlab.com/Cacophony/dhelpers"
 	"gitlab.com/Cacophony/dhelpers/cache"
 )
 
@@ -30,7 +29,9 @@ func readResponse(response *http.Response) ([]byte, error) {
 	if response.Body != nil {
 		defer func() {
 			closeBodyErr := response.Body.Close()
-			dhelpers.LogError(closeBodyErr)
+			if closeBodyErr != nil {
+				cache.GetLogger().WithError(closeBodyErr).Errorln("error closing body")
+			}
 		}()
 	}
 
@@ -50,7 +51,9 @@ func readResponse(response *http.Response) ([]byte, error) {
 		if gzipReader != nil {
 			defer func() {
 				closeGzipErr := gzipReader.Close()
-				dhelpers.LogError(closeGzipErr)
+				if closeGzipErr != nil {
+					cache.GetLogger().WithError(closeGzipErr).Errorln("error closing gzip reader")
+				}
 			}()
 		}
 		// copy result to buffer

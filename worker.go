@@ -6,6 +6,7 @@ import (
 
 	"github.com/bsm/redis-lock"
 	"gitlab.com/Cacophony/dhelpers/cache"
+	"gitlab.com/Cacophony/dhelpers/net"
 )
 
 // Job defines setting for a job
@@ -35,6 +36,18 @@ func JobStart(jobName string, timeout time.Duration) (start bool, locker *lock.L
 	// lock locker
 	start, err = locker.LockWithContext(context.Background())
 	return start, locker, err
+}
+
+// JobFinishSuccess calls the healthcheck if exists
+func JobFinishSuccess(healthcheckURL string) error {
+	if healthcheckURL != "" {
+		_, err := net.Get(healthcheckURL)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // JobErrorHandler handles errors at jobs, defer to this: defer JobErrorHandler(jobName)
