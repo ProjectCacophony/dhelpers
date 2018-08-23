@@ -3,26 +3,26 @@ package cache
 import (
 	"sync"
 
-	"github.com/globalsign/mgo"
+	"github.com/mongodb/mongo-go-driver/mongo"
 )
 
 var (
-	mgoSession      *mgo.Database
-	mgoSessionMutex sync.RWMutex
+	mongoClient      *mongo.Database
+	mongoClientMutex sync.RWMutex
 )
 
-// SetMgo caches a MongoDB Database Session for future use
-func SetMgo(s *mgo.Database) {
-	mgoSessionMutex.Lock()
-	defer mgoSessionMutex.Unlock()
+// SetMongo caches a MongoDB Client for future use
+func SetMongo(c *mongo.Database) {
+	mongoClientMutex.Lock()
+	defer mongoClientMutex.Unlock()
 
-	mgoSession = s
+	mongoClient = c
 }
 
-// GetMgo returns a cached MongoDB Database Session
-func GetMgo() *mgo.Database {
-	mgoSessionMutex.RLock()
-	defer mgoSessionMutex.RUnlock()
+// GetMongo returns a cached MongoDB Client
+func GetMongo() *mongo.Database {
+	mongoClientMutex.RLock()
+	defer mongoClientMutex.RUnlock()
 
-	return mgoSession
+	return mongoClient
 }

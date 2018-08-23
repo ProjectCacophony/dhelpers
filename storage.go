@@ -13,17 +13,19 @@ import (
 
 	"net/http"
 
+	"context"
+
 	"github.com/bwmarrin/discordgo"
-	"github.com/globalsign/mgo/bson"
 	"github.com/kennygrant/sanitize"
 	"github.com/minio/minio-go"
 	"github.com/satori/go.uuid"
 	"gitlab.com/Cacophony/dhelpers/cache"
-	"gitlab.com/Cacophony/dhelpers/mdb"
 	"gitlab.com/Cacophony/dhelpers/models"
+	"gitlab.com/Cacophony/dhelpers/mongo"
 	"gitlab.com/Cacophony/dhelpers/state"
 )
 
+// TODO test all database functions
 // TODO: watch cache folder size
 
 // AddFileMetadata defines possible metadta for new objects
@@ -42,7 +44,7 @@ type AddFileMetadata struct {
 // source	: the source name for the file, for example the module name, can not be empty
 // public	: if true file will be available via the website proxy
 // TODO: prevent duplicates
-func AddFile(name string, data []byte, metadata AddFileMetadata, source string, public bool) (objectName string, err error) {
+func AddFile(ctx context.Context, name string, data []byte, metadata AddFileMetadata, source string, public bool) (objectName string, err error) {
 	// check if source is set
 	if source == "" {
 		return "", errors.New("source can not be empty")
@@ -94,9 +96,9 @@ func AddFile(name string, data []byte, metadata AddFileMetadata, source string, 
 		return "", err
 	}
 	// store in database
-	err = mdb.UpsertQuery(
-		models.StorageTable,
-		bson.M{"objectname": objectName},
+	err = models.StorageRepository.Update(
+		ctx,
+		map[string]string{"objectname": objectName},
 		models.StorageEntry{
 			ObjectName:     objectName,
 			ObjectNameHash: GetMD5Hash(objectName),
@@ -126,9 +128,10 @@ func AddFile(name string, data []byte, metadata AddFileMetadata, source string, 
 
 // RetrieveFileInformation retrieves information about a file
 // objectName	: the name of the file to retrieve
-func RetrieveFileInformation(objectName string) (info models.StorageEntry, err error) {
-	err = mdb.One(
-		models.StorageTable.DB().Find(bson.M{"objectname": objectName}),
+func RetrieveFileInformation(ctx context.Context, objectName string) (info models.StorageEntry, err error) {
+	err = models.StorageRepository.FindOne(
+		ctx,
+		map[string]string{"objectname": objectName},
 		&info,
 	)
 	return info, err
@@ -136,12 +139,16 @@ func RetrieveFileInformation(objectName string) (info models.StorageEntry, err e
 
 // RetrieveFile retrieves a file
 // objectName	: the name of the file to retrieve
-func RetrieveFile(objectName string) (data []byte, err error) {
+func RetrieveFile(ctx context.Context, objectName string) (data []byte, err error) {
 	// Increase MongoDB RetrievedCount
 	go func() {
 		defer RecoverLog()
-		goErr := mdb.UpdateQuery(models.StorageTable, bson.M{"objectname": objectName}, bson.M{"$inc": bson.M{"retrievedcount": 1}})
-		if goErr != nil && !mdb.ErrNotFound(goErr) {
+		goErr := models.StorageRepository.Update(
+			ctx,
+			map[string]string{"objectname": objectName},
+			map[string]map[string]int{"$inc": {"retrievedcount": 1}},
+		)
+		if goErr != nil && !(goErr == mongo.ErrNotFound) {
 			CheckErr(goErr)
 		}
 	}()
@@ -160,12 +167,12 @@ func RetrieveFile(objectName string) (data []byte, err error) {
 		if strings.Contains(err.Error(), "Please reduce your request rate.") {
 			cache.GetLogger().WithField("module", "storage").Infof("object storage ratelimited, waiting for one second, then retrying")
 			time.Sleep(1 * time.Second)
-			return RetrieveFile(objectName)
+			return RetrieveFile(ctx, objectName)
 		}
 		if strings.Contains(err.Error(), "net/http") || strings.Contains(err.Error(), "timeout") {
 			cache.GetLogger().WithField("module", "storage").Infof("network error retrieving, waiting for one second, then retrying")
 			time.Sleep(1 * time.Second)
-			return RetrieveFile(objectName)
+			return RetrieveFile(ctx, objectName)
 		}
 		return data, err
 	}
@@ -188,17 +195,18 @@ func RetrieveFile(objectName string) (data []byte, err error) {
 
 // RetrieveFileByHash retrieves a file by the object name md5 hash
 // hash	: the md5 hash
-func RetrieveFileByHash(hash string) (filename, filetype string, data []byte, err error) {
+func RetrieveFileByHash(ctx context.Context, hash string) (filename, filetype string, data []byte, err error) {
 	var entryBucket models.StorageEntry
-	err = mdb.One(
-		models.StorageTable.DB().Find(bson.M{"objectnamehash": hash}),
+	err = models.StorageRepository.FindOne(
+		ctx,
+		map[string]string{"objectnamehash": hash},
 		&entryBucket,
 	)
-	if err != nil && !mdb.ErrNotFound(err) {
+	if err != nil && !(err == mongo.ErrNotFound) {
 		return "", "", nil, err
 	}
 
-	data, err = RetrieveFile(entryBucket.ObjectName)
+	data, err = RetrieveFile(ctx, entryBucket.ObjectName)
 	if err != nil {
 		return "", "", nil, err
 	}
@@ -208,11 +216,13 @@ func RetrieveFileByHash(hash string) (filename, filetype string, data []byte, er
 // RetrieveFilesByAdditionalObjectMetadata retrieves files by additional object metadta
 // currently supported file sources: custom commands
 // hash	: the md5 hash
-func RetrieveFilesByAdditionalObjectMetadata(key, value string) (objectNames []string, err error) {
+func RetrieveFilesByAdditionalObjectMetadata(ctx context.Context, key, value string) (objectNames []string, err error) {
 	var entryBucket []models.StorageEntry
-	err = mdb.Iter(models.StorageTable.DB().Find(
-		bson.M{"metadata." + strings.ToLower(key): value},
-	)).All(&entryBucket)
+	err = models.StorageRepository.Find(
+		ctx,
+		map[string]string{"metadata." + strings.ToLower(key): value},
+		&entryBucket,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +243,7 @@ func RetrieveFilesByAdditionalObjectMetadata(key, value string) (objectNames []s
 
 // DeleteFile deletes a file
 // objectName	: the name of the object
-func DeleteFile(objectName string) (err error) {
+func DeleteFile(ctx context.Context, objectName string) (err error) {
 	cache.GetLogger().WithField("module", "storage").Infof("deleting " + objectName + " from minio storage")
 
 	go func() {
@@ -249,8 +259,8 @@ func DeleteFile(objectName string) (err error) {
 	// delete mongo db entry
 	go func() {
 		defer RecoverLog()
-		goErr := mdb.DeleteQuery(models.StorageTable, bson.M{"objectname": objectName})
-		if goErr != nil && !mdb.ErrNotFound(goErr) {
+		goErr := models.StorageRepository.Delete(ctx, map[string]string{"objectname": objectName})
+		if goErr != nil && !(goErr == mongo.ErrNotFound) {
 			CheckErr(err)
 		}
 	}()

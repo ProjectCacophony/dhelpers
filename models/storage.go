@@ -3,18 +3,23 @@ package models
 import (
 	"time"
 
-	"github.com/globalsign/mgo/bson"
-	"gitlab.com/Cacophony/dhelpers/mdb"
+	"github.com/mongodb/mongo-go-driver/bson/objectid"
+	"gitlab.com/Cacophony/dhelpers/mongo"
 )
 
 const (
 	// StorageTable is the table containing all StorageEntry entries
-	StorageTable mdb.Collection = "storage"
+	StorageTable mongo.Collection = "storage"
+)
+
+var (
+	// StorageRepository contains the database logic for the table
+	StorageRepository = mongo.NewRepository(StorageTable)
 )
 
 // StorageEntry contains information about an object stored in object storage
 type StorageEntry struct {
-	ID             bson.ObjectId `bson:"_id,omitempty"`
+	ID             *objectid.ObjectID `bson:"_id,omitempty"`
 	ObjectName     string
 	ObjectNameHash string
 	UploadDate     time.Time

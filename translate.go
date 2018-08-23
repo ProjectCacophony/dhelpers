@@ -8,11 +8,10 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/globalsign/mgo/bson"
+	"github.com/mongodb/mongo-go-driver/bson/objectid"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gitlab.com/Cacophony/dhelpers/cache"
 	"gitlab.com/Cacophony/dhelpers/emoji"
-	"gitlab.com/Cacophony/dhelpers/mdb"
 )
 
 var (
@@ -20,8 +19,8 @@ var (
 	translationFuncs = template.FuncMap{
 		// ObjectID returns a humanised version of an object ID
 		// example: {{ObjectID id}} => 5ae3a59624f8753dba273792
-		"ObjectID": func(id bson.ObjectId) string {
-			return mdb.IDToHuman(id)
+		"ObjectID": func(id objectid.ObjectID) string {
+			return id.String()
 		},
 		// MarkdownLinkEscape returns a given link escaped to be used in Markdown
 		// example: {{MarkdownLinkEscape "https://example.org/A+(B)"}} => https://example.org/A+%28B%29
