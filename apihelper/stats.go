@@ -85,14 +85,14 @@ func (s GatewayStatus) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// SqsProcessorStatus contains information about a SqsProcessor
-type SqsProcessorStatus struct {
+// ProcessorStatus contains information about a Processor
+type ProcessorStatus struct {
 	Available bool
 	Service   ServiceInformation
 }
 
 // Render renders the WorkerStatus for a network response, required to satisfy Chi interface
-func (s SqsProcessorStatus) Render(w http.ResponseWriter, r *http.Request) error {
+func (s ProcessorStatus) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
@@ -153,24 +153,24 @@ func ReadGatewayStatus() (stats map[string]GatewayStatus) {
 	return stats
 }
 
-// ReadSqsProcessorStatus returns information about all workers
-// the addresses are read from SQSPROCESSOR_ADDRESSES, split using commas
-func ReadSqsProcessorStatus() (stats map[string]SqsProcessorStatus) {
-	stats = make(map[string]SqsProcessorStatus)
-	sqsProcessorAddresses := os.Getenv("SQSPROCESSOR_ADDRESSES")
-	for _, sqsProcessorAddress := range strings.Split(sqsProcessorAddresses, ",") {
-		sqsProcessorAddress = strings.TrimSpace(sqsProcessorAddress)
-		data, err := net.Get(sqsProcessorAddress + "/stats")
+// ReadProcessorStatus returns information about all workers
+// the addresses are read from PROCESSOR_ADDRESSES, split using commas
+func ReadProcessorStatus() (stats map[string]ProcessorStatus) {
+	stats = make(map[string]ProcessorStatus)
+	processorAddresses := os.Getenv("PROCESSOR_ADDRESSES")
+	for _, processorAddress := range strings.Split(processorAddresses, ",") {
+		processorAddress = strings.TrimSpace(processorAddress)
+		data, err := net.Get(processorAddress + "/stats")
 		if err != nil {
-			stats[sqsProcessorAddress] = SqsProcessorStatus{
+			stats[processorAddress] = ProcessorStatus{
 				Available: false,
 			}
 			continue
 		}
-		var status SqsProcessorStatus
+		var status ProcessorStatus
 		err = jsoniter.Unmarshal(data, &status)
 		dhelpers.CheckErr(err)
-		stats[sqsProcessorAddress] = status
+		stats[processorAddress] = status
 	}
 	return stats
 }

@@ -95,6 +95,7 @@ type DestinationType string
 const (
 	LambdaDestinationType DestinationType = "lambda"
 	SqsDestinationType                    = "sqs"
+	KafkaDestinationType                  = "kafka"
 )
 
 // DestinationData contains all information for one destination

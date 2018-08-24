@@ -316,16 +316,9 @@ func ContainerDestinations(session *discordgo.Session, routingConfig []RoutingRu
 		handled++
 
 		switch routingEntry.DestinationMain {
-		case "lambda":
+		case "kafka":
 			destinations = append(destinations, DestinationData{
-				Type:          LambdaDestinationType,
-				Name:          routingEntry.DestinationSub,
-				ErrorHandlers: routingEntry.ErrorHandlers,
-				Alias:         routingEntry.Alias,
-			})
-		case "sqs":
-			destinations = append(destinations, DestinationData{
-				Type:          SqsDestinationType,
+				Type:          KafkaDestinationType,
 				Name:          routingEntry.DestinationSub,
 				ErrorHandlers: routingEntry.ErrorHandlers,
 				Alias:         routingEntry.Alias,
