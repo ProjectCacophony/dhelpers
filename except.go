@@ -13,6 +13,8 @@ import (
 
 	"net/http"
 
+	"strings"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/getsentry/raven-go"
@@ -246,8 +248,12 @@ func HandleHTTPErrorWith(service string, request *http.Request, err error, error
 }
 
 // CheckErr panics if err is not nil
-func CheckErr(err error) {
+func CheckErr(err error, message ...string) {
 	if err != nil {
+		if cache.HasLogger() && len(message) > 0 {
+			cache.GetLogger().WithError(err).Panicln(strings.Join(message, " "))
+		}
+
 		panic(err)
 	}
 }
